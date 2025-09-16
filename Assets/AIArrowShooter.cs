@@ -10,7 +10,7 @@ public class AIArrowShooter : MonoBehaviour
     public bool isLeft = false;           // AI માત્ર જમણી બાજુથી ડાબી બાજુ શૂટ કરે
 
     [Header("AI Shooting Controls")]
-    public float shootInterval = 5f;     // AI કેટલા સમયમાં શૂટ કરે (5 seconds)
+    public float shootInterval = 1f;     // AI કેટલા સમયમાં શૂટ કરે (1 second)
     public bool aiAutoShoot = true;       // AI automatically શૂટ કરે કે નહીં
     public float aiReactionTime = 0.5f;   // AI નો reaction time (ઓછું)
 
