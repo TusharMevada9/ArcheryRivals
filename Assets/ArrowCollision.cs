@@ -44,11 +44,33 @@ public class ArrowCollision : MonoBehaviour
 
         Debug.Log("Arrow hit target - will not be destroyed");
 
+
+        // Check arrow tag and update score accordingly
+        if (targetCollider.CompareTag("Red"))
+        {
+            // Red arrow hit target - increase red score
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.AddRedScore(1);
+                Debug.Log("Red Arrow hit! Red Score increased by 10");
+            }
+        }
+        else if (targetCollider.CompareTag("Blue"))
+        {
+            // Blue arrow hit target - increase blue score
+            if (UIManager.Instance != null)
+            {
+                UIManager.Instance.AddBlueScore(1);
+                Debug.Log("Blue Arrow hit! Blue Score increased by 10");
+            }
+        }
+
         Vector2 Pos = targetCollider.transform.position;
         Pos.x -= 0.3f;
         GameObject New = Instantiate(ArrowHitPrefab, targetCollider.transform.position, Quaternion.identity);
         New.transform.SetParent(this.gameObject.transform);
         Destroy(targetCollider.gameObject);
+
 
         if (Count == 0)
         {

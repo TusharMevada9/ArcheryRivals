@@ -331,12 +331,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  moveRange: 5
+  moveRange: 3
   moveUpDown: 1
   useRandomSpeed: 1
   minSpeed: 1
-  maxSpeed: 2
-  speedChangeInterval: 1
+  maxSpeed: 1.5
+  speedChangeInterval: 3
 --- !u!58 &92956188
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1330,7 +1330,7 @@ MonoBehaviour:
   useRandomSpeed: 0
   minSpeed: 1
   maxSpeed: 4
-  speedChangeInterval: 1
+  speedChangeInterval: 2
 --- !u!114 &838291593
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2121,12 +2121,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  moveRange: 4
+  moveRange: 3
   moveUpDown: 1
   useRandomSpeed: 0
   minSpeed: 1
-  maxSpeed: 4
-  speedChangeInterval: 1
+  maxSpeed: 2
+  speedChangeInterval: 3
 --- !u!4 &1416597270
 Transform:
   m_ObjectHideFlags: 0
@@ -2167,8 +2167,13 @@ MonoBehaviour:
   arrowLifetime: 3
   resetVelocityOnSpawn: 1
   useDirectVelocity: 1
-  aiAccuracy: 0.8
-  currentAIDifficulty: 0
+  aiAccuracy: 1
+  playerTransform: {fileID: 1416597270}
+  targetTransform: {fileID: 92956184}
+  lineDetectionRange: 0.5
+  maxWaitTime: 2
+  shootWaitTime: 0.5
+  currentAIDifficulty: 1
 --- !u!1 &1446133371
 GameObject:
   m_ObjectHideFlags: 0
@@ -2567,8 +2572,8 @@ MonoBehaviour:
   moveUpDown: 1
   useRandomSpeed: 1
   minSpeed: 1
-  maxSpeed: 2
-  speedChangeInterval: 1
+  maxSpeed: 1.5
+  speedChangeInterval: 3
 --- !u!212 &1616986991
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2696,7 +2701,7 @@ GameObject:
   - component: {fileID: 1936936977}
   - component: {fileID: 1936936976}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: RedScore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2822,6 +2827,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1936936974}
   m_CullTransparentMesh: 1
+--- !u!1 &1964682657
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1964682658}
+  - component: {fileID: 1964682659}
+  m_Layer: 0
+  m_Name: UIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1964682658
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964682657}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.26, y: 0, z: 23.72}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1964682659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964682657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d721b4fcb7f7cc4a96696b6ecb9f194, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  redScoreText: {fileID: 1936936976}
+  blueScoreText: {fileID: 1990144805}
+  redScore: 0
+  blueScore: 0
 --- !u!1 &1990144803
 GameObject:
   m_ObjectHideFlags: 0
@@ -2834,7 +2887,7 @@ GameObject:
   - component: {fileID: 1990144806}
   - component: {fileID: 1990144805}
   m_Layer: 5
-  m_Name: Text (TMP) (2)
+  m_Name: BlueScore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3202,9 +3255,10 @@ SceneRoots:
   - {fileID: 1694424449}
   - {fileID: 838291591}
   - {fileID: 1416597270}
+  - {fileID: 92956184}
   - {fileID: 177402553}
   - {fileID: 1168376639}
-  - {fileID: 92956184}
   - {fileID: 1616986992}
   - {fileID: 1260743730}
   - {fileID: 1570746766}
+  - {fileID: 1964682658}
