@@ -21,7 +21,6 @@ public class ArrowShooter : MonoBehaviour
 
     void Start()
     {
-        // જો shootPoint set નથી કર્યું તો bow ની position ઉપયોગ કરો
         if (shootPoint == null)
         {
             shootPoint = transform;
@@ -55,31 +54,24 @@ public class ArrowShooter : MonoBehaviour
             yield break;
         }
 
-        // તીર instantiate કરો - exact position પર
-        //Vector3 spawnPosition = shootPoint.position;
         GameObject newArrow = Instantiate(arrowPrefab, spawnPosition, Quaternion.identity);
 
-        // Rigidbody2D મળે તો force લગાવો
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
         if (arrowRb != null)
         {
-            // પહેલા velocity zero કરો (જો setting ચાલુ હોય)
             if (resetVelocityOnSpawn)
             {
                 arrowRb.linearVelocity = Vector2.zero;
                 arrowRb.angularVelocity = 0f;
             }
 
-            // isLeft bool પર આધારિત force direction
             Vector2 forceDirection;
             if (isLeft)
             {
-                // ડાબી બાજુથી જમણી બાજુ
                 forceDirection = new Vector2(1f, 0f); // જમણી બાજુ તરફ
             }
             else
             {
-                // જમણી બાજુથી ડાબી બાજુ
                 forceDirection = new Vector2(-1f, 0f); // ડાબી બાજુ તરફ
             }
 
@@ -87,7 +79,6 @@ public class ArrowShooter : MonoBehaviour
 
             if (useDirectVelocity)
             {
-                // Velocity directly set કરો - વધુ reliable
                 arrowRb.linearVelocity = forceDirection * shootForce;
                 Debug.Log("Direct velocity set: " + arrowRb.linearVelocity);
             }
@@ -112,12 +103,6 @@ public class ArrowShooter : MonoBehaviour
         }
 
         Debug.Log("Arrow Shot! Force: " + shootForce);
-    }
-
-    public void DestroyArrow()
-    {
-       
-
     }
 
 }

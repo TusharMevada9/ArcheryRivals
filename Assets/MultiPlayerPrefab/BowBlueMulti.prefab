@@ -97,7 +97,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4842330482129758193}
   - component: {fileID: 4877513348855213661}
-  - component: {fileID: 2997679613048181524}
+  - component: {fileID: 5825525857633940359}
+  - component: {fileID: 37001291451662089}
+  - component: {fileID: 4572502168330226739}
+  - component: {fileID: 4155821376941042287}
   m_Layer: 0
   m_Name: BowBlueMulti
   m_TagString: Untagged
@@ -141,7 +144,7 @@ MonoBehaviour:
   minSpeed: 1
   maxSpeed: 4
   speedChangeInterval: 2
---- !u!114 &2997679613048181524
+--- !u!114 &5825525857633940359
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -150,19 +153,89 @@ MonoBehaviour:
   m_GameObject: {fileID: 6119531528301396310}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93d7a3a8ae6a90d4abc2cf3f6282fd32, type: 3}
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arrowPrefab: {fileID: 6144408211903871928, guid: b8cd1c5e923a03a419656cf0b785880f, type: 3}
+  SortKey: 3528785219
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 4572502168330226739}
+  - {fileID: 4155821376941042287}
+  ForceRemoteRenderTimeframe: 0
+--- !u!50 &37001291451662089
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6119531528301396310}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!114 &4572502168330226739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6119531528301396310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b8ceabebe0042f43a9f0ebe846129e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowPrefab: {fileID: 4388479936700566454, guid: 683d34d0906ccf84b8e4f8cb45e894bd, type: 3}
   shootPoint: {fileID: 511030816493069620}
   shootForce: 20
   isLeft: 0
-  useGravity: 1
-  arrowLifetime: 4
+  useGravity: 0
+  arrowLifetime: 3
   resetVelocityOnSpawn: 1
   useDirectVelocity: 1
   spawnPosition: {x: 0, y: 0, z: 0}
   isForceApplied: 0
+--- !u!114 &4155821376941042287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6119531528301396310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5e690b5fb1084f5ab1c86457af401d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0
+  SyncScale: 0
+  SyncParent: 1
+  _interpolationTarget: {fileID: 0}
+  UsePreciseRotation: 0
+  UseRenderSleepThresholds: 1
+  RenderThresholds:
+    UseEnergy: 1
+    Position: 0.01
+    Rotation: 0.01
+    Scale: 0.01
 --- !u!1 &7572983846744038242
 GameObject:
   m_ObjectHideFlags: 0
@@ -240,7 +313,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: f69cb65d172d1944790ef3be6930a1bb, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.114206314, g: 0, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

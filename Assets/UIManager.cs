@@ -12,12 +12,12 @@ public class UIManager : MonoBehaviour
     public int redScore = 0;
     public int blueScore = 0;
 
-    // Singleton Instance
+    public bool isGameStart = false;
+
     public static UIManager Instance { get; private set; }
 
     void Awake()
     {
-        // Singleton setup
         if (Instance == null)
         {
             Instance = this;
@@ -29,20 +29,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         UpdateRedScore(0);
         UpdateBlueScore(0);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    
-    // Red Score Functions
     public void UpdateRedScore(int score)
     {
         redScore = score;
@@ -54,8 +46,7 @@ public class UIManager : MonoBehaviour
     {
         UpdateRedScore(redScore + points);
     }
-    
-    // Blue Score Functions
+
     public void UpdateBlueScore(int score)
     {
         blueScore = score;

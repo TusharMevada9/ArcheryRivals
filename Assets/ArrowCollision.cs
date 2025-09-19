@@ -5,16 +5,16 @@ using UnityEngine;
 public class ArrowCollision : MonoBehaviour
 {
     [Header("Collision Settings")]
-    public string targetTag = "Target";        // ટાર્ગેટનો tag// લાલ ટાર્ગેટનો tag
-    public bool stopOnCollision = true;        // collision પર stop કરવું છે કે નહીં
-    public bool destroyOnCollision = false;    // collision પર destroy કરવું છે કે નહીં
-    public bool makeTargetKinematic = true;    // target ને પણ kinematic કરવું છે કે નહીં
+    public string targetTag = "Target";
+    public bool stopOnCollision = true;
+    public bool destroyOnCollision = false;
+    public bool makeTargetKinematic = true;
 
     [Header("Visual Effects")]
-    public bool showHitEffect = true;         // hit effect બતાવવું છે કે નહીં
-    public Color hitColor = Color.red;         // hit થયા પછીનો રંગ
-    private Rigidbody2D arrowRb;              // arrow નો rigidbody
-    private SpriteRenderer arrowSprite;       // arrow નો sprite renderer
+    public bool showHitEffect = true;     
+    public Color hitColor = Color.red;  
+    private Rigidbody2D arrowRb;           
+    private SpriteRenderer arrowSprite;    
 
     public List<GameObject> targets = new List<GameObject>();
 
@@ -24,7 +24,6 @@ public class ArrowCollision : MonoBehaviour
 
     void Start()
     {
-        // Rigidbody2D અને SpriteRenderer get કરો
         arrowRb = GetComponent<Rigidbody2D>();
         arrowSprite = GetComponent<SpriteRenderer>();
     }
@@ -32,7 +31,6 @@ public class ArrowCollision : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // જો target tag સાથે collide થાય તો
         if (other.gameObject.CompareTag(targetTag))
         {
             HandleCollision2D(other);
@@ -45,10 +43,8 @@ public class ArrowCollision : MonoBehaviour
         Debug.Log("Arrow hit target - will not be destroyed");
 
 
-        // Check arrow tag and update score accordingly
         if (targetCollider.CompareTag("Red"))
         {
-            // Red arrow hit target - increase red score
             if (UIManager.Instance != null)
             {
                 UIManager.Instance.AddRedScore(1);
@@ -57,7 +53,6 @@ public class ArrowCollision : MonoBehaviour
         }
         else if (targetCollider.CompareTag("Blue"))
         {
-            // Blue arrow hit target - increase blue score
             if (UIManager.Instance != null)
             {
                 UIManager.Instance.AddBlueScore(1);

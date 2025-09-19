@@ -20,8 +20,8 @@ public class AIArrowShooter : MonoBehaviour
     public bool resetVelocityOnSpawn = true;
     public bool useDirectVelocity = true;
 
-    [Header("AI Difficulty")]
-    public float aiAccuracy = 0.8f;       // AI ની accuracy
+    //[Header("AI Difficulty")]
+    //public float aiAccuracy = 0.8f;       // AI ની accuracy
     
     [Header("Line Detection")]
     public Transform playerTransform;     // Player નો transform
@@ -32,14 +32,8 @@ public class AIArrowShooter : MonoBehaviour
     public float shootWaitTime = 0.5f;
     
     [Header("AI Difficulty Levels")]
-    public AIDifficultyLevel currentAIDifficulty = AIDifficultyLevel.Easy;
+    public AIMode currentAIDifficulty = AIMode.Easy;
     
-    public enum AIDifficultyLevel
-    {
-        Easy,    // 40% win chance
-        Hard     // 60% win chance
-    }
-
     private Vector3 spawnPosition;
     private bool canShoot = true;
     private float waitTimer = 0f;         // Wait timer
@@ -51,23 +45,19 @@ public class AIArrowShooter : MonoBehaviour
             shootPoint = transform;
         }
 
-        // AI difficulty settings apply કરો
-        ApplyDifficultySettings();
-
-        // Game start થાય તો AI automatically શૂટ કરવાનું શરૂ કરો
-        Debug.Log("Game Started - AI will start shooting arrows!");
-        Debug.Log("AI Difficulty: " + currentAIDifficulty);
-
-        StartRandomShooting();
-
-        if (currentAIDifficulty == AIDifficultyLevel.Easy)
+        if (IFrameBridge.Instance.botLevel == AIMode.Easy)
         {
+            currentAIDifficulty = AIMode.Easy;
             shootWaitTime = 1f;
         }
         else
         {
-             shootWaitTime = 0.5f;
+            currentAIDifficulty = AIMode.Hard;
+            shootWaitTime = 0.5f;
         }
+
+        StartRandomShooting();
+
     }
 
     void Update()
@@ -114,24 +104,6 @@ public class AIArrowShooter : MonoBehaviour
         
         Invoke(nameof(AIShootCycle), shootInterval);
     }
-
-
-    // AI difficulty settings apply કરવા માટે
-    void ApplyDifficultySettings()
-    {
-        if (currentAIDifficulty == AIDifficultyLevel.Easy)
-        {
-            aiAccuracy = 0.5f;           // 50% accuracy - balanced
-            shootInterval = 1f;          // હંમેશા 2 seconds - accuracy ના કારણે બદલાશે નહીં
-        }
-        else if (currentAIDifficulty == AIDifficultyLevel.Hard)
-        {
-            aiAccuracy = 0.6f;           // 60% accuracy - થોડું વધારે પણ ખૂબ વધારે નહીં
-            shootInterval = 1f;          // હંમેશા 2 seconds - accuracy ના કારણે બદલાશે નહીં
-        }
-    }
-    
-    // Check if player and target Y positions are close (for both Easy and Hard AI)
     bool ArePositionsClose()
     {
         if (playerTransform == null || targetTransform == null)
@@ -161,17 +133,7 @@ public class AIArrowShooter : MonoBehaviour
         Debug.Log($"{currentAIDifficulty} AI - 1 second delay completed - AI shooting now!");
         StartCoroutine(ShootArrow());
     }
-    
-    // AI ની accuracy check કરવા માટે
-    bool CheckAIAccuracy()
-    {
-        float randomValue = Random.Range(0f, 1f);
-        bool hit = randomValue <= aiAccuracy;
-        
-        return hit;
-    }
-
-    // તીર શૂટ કરવાનું ફંક્શન
+   
     public IEnumerator ShootArrow()
     {
         if (arrowPrefab == null)
@@ -234,13 +196,10 @@ public class AIArrowShooter : MonoBehaviour
         canShoot = true;
         Debug.Log("AI Arrow Shot! Force: " + shootForce);
     }
+}
 
-   
-    public void SetAIDifficulty(AIDifficultyLevel difficulty)
-    {
-        currentAIDifficulty = difficulty;
-        ApplyDifficultySettings();
-        Debug.Log("AI Difficulty changed to: " + currentAIDifficulty);
-    }
-
+public enum AIMode
+{
+    Easy,    // 40% win chance
+    Hard     // 60% win chance
 }
