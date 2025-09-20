@@ -204,10 +204,10 @@ public class IFrameBridge : MonoBehaviour
 #else
         // Use test data in editor/non-WebGL builds - CHOOSE MODE HERE:
         // FOR AI MODE TESTING (uncomment this line):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a912345678\"}";
+        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a912345678\"}";
 
         //FOR MULTIPLAYER MODE TESTING (comment out the line above and uncomment this line):
-        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
 
         Debug.Log("Enter");
 
@@ -240,11 +240,11 @@ public class IFrameBridge : MonoBehaviour
         // CHOOSE ONE MODE FOR TESTING:
 
         // 1. FOR AI MODE TESTING (default):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a9\"}";
+        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a9\"}";
 
 
         // 2. FOR MULTIPLAYER MODE TESTING (uncomment this line and comment out the line above):
-        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
 
         InitParamsFromJS(json);
     }

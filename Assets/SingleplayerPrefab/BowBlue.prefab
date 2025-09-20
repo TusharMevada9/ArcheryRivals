@@ -69,21 +69,17 @@ MonoBehaviour:
   arrowPrefab: {fileID: 6144408211903871928, guid: b8cd1c5e923a03a419656cf0b785880f, type: 3}
   shootPoint: {fileID: 7136690018265576830}
   shootForce: 20
-  isLeft: 0
-  shootInterval: 1
+  shootInterval: 2
   aiAutoShoot: 1
-  aiReactionTime: 0.5
+  Bow: {fileID: 4830648394839326414}
+  Target: {fileID: 0}
+  maxShootDistance: 1
   useGravity: 0
-  arrowLifetime: 3
+  arrowLifetime: 4
   resetVelocityOnSpawn: 1
   useDirectVelocity: 1
-  aiAccuracy: 1
-  playerTransform: {fileID: 4830648394839326414}
-  targetTransform: {fileID: 0}
-  lineDetectionRange: 0.5
-  maxWaitTime: 2
-  shootWaitTime: 0.5
   currentAIDifficulty: 1
+  isGameStart: 0
 --- !u!1 &2509081874260106123
 GameObject:
   m_ObjectHideFlags: 0

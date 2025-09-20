@@ -33,7 +33,7 @@ public class FusionConnector : MonoBehaviour, INetworkRunnerCallbacks
             {
                 GameMode = GameMode.Shared,
                 SessionName = sessionName,
-                PlayerCount = 2, 
+                PlayerCount = 2,
             }
         );
 
@@ -73,10 +73,10 @@ public class FusionConnector : MonoBehaviour, INetworkRunnerCallbacks
         {
             Debug.Log("🎮 2 players joined → Starting countdown!");
             // Start the countdown when both players are ready
-            //if (GameManager.Instance != null)
-            //{
-            //    GameManager.Instance.RPC_StartCountdown();
-            //}
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RPC_StartCountdown();
+            }
         }
     }
 

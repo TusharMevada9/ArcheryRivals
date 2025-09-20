@@ -4,39 +4,33 @@ using UnityEngine;
 public class AIArrowShooter : MonoBehaviour
 {
     [Header("AI Arrow Settings")]
-    public GameObject arrowPrefab;         // તીરનો prefab
-    public Transform shootPoint;          // તીર ક્યાંથી શૂટ થશે
-    public float shootForce = 8f;        // તીર પર લગાવવાનું બળ (ઓછું બળ - ધીમું)
-    public bool isLeft = false;           // AI માત્ર જમણી બાજુથી ડાબી બાજુ શૂટ કરે
-
-    [Header("AI Shooting Controls")]
-    public float shootInterval = 1f;     // AI કેટલા સમયમાં શૂટ કરે (2 seconds - ધીમું)
-    public bool aiAutoShoot = true;       // AI automatically શૂટ કરે કે નહીં
-    public float aiReactionTime = 0.5f;   // AI નો reaction time (ઓછું)
-
+    public GameObject arrowPrefab;
+    public Transform shootPoint;     
+    public float shootForce = 8f;   
+    public float shootInterval = 2f;   
+    public bool aiAutoShoot = true;      
+    
+    [Header("Transform References")]
+    public Transform Bow; // First transform reference
+    public Transform Target; // Second transform reference
+    
+    [Header("Distance Settings")]
+    public float maxShootDistance = 3f; // Maximum distance to shoot
+    
     [Header("Arrow Physics")]
-    public bool useGravity = false;       // gravity લાગવી છે કે નહીં
-    public float arrowLifetime = 3f;     // Arrow lifetime ઓછું (3 seconds)
+    public bool useGravity = false;      
+    public float arrowLifetime = 3f;  
     public bool resetVelocityOnSpawn = true;
     public bool useDirectVelocity = true;
 
-    //[Header("AI Difficulty")]
-    //public float aiAccuracy = 0.8f;       // AI ની accuracy
-    
-    [Header("Line Detection")]
-    public Transform playerTransform;     // Player નો transform
-    public Transform targetTransform;     // Target circle નો transform
-    public float lineDetectionRange = 0.5f; // Line detection ની range (ઓછી range - exact match)
-    public float maxWaitTime = 2f;        // Maximum wait time before shooting anyway
-
-    public float shootWaitTime = 0.5f;
-    
     [Header("AI Difficulty Levels")]
     public AIMode currentAIDifficulty = AIMode.Easy;
     
     private Vector3 spawnPosition;
-    private bool canShoot = true;
-    private float waitTimer = 0f;         // Wait timer
+    private float currentDistance = 0f;
+    private bool canShoot = false;
+
+    public bool isGameStart = false;
 
     void Start()
     {
@@ -48,92 +42,90 @@ public class AIArrowShooter : MonoBehaviour
         if (IFrameBridge.Instance.botLevel == AIMode.Easy)
         {
             currentAIDifficulty = AIMode.Easy;
-            shootWaitTime = 1f;
+            shootInterval = 2f;
         }
         else
         {
             currentAIDifficulty = AIMode.Hard;
-            shootWaitTime = 0.5f;
+            shootInterval = 1.5f;
         }
-
-        StartRandomShooting();
-
+        
+        // Assign blue target when AI spawns
+        AssignBlueTarget();
+        
+        StartAiShooting();
     }
 
     void Update()
     {
         spawnPosition = this.gameObject.transform.position;
+        
+        isGameStart = UIManager.Instance.isGameStart;
+
+        // Calculate Y difference with 3 conditions
+        if (Bow != null && Target != null)
+        {
+            float yDiff = Bow.position.y - Target.position.y;
+            currentDistance = Mathf.Abs(yDiff); // Use absolute difference
+
+            // 3 Conditions for shooting:
+            // 1. Difference = 0 → Shoot
+            // 2. Difference = 1 → Shoot  
+            // 3. Difference > 1 → Don't shoot
+            if (currentDistance >= 0f && currentDistance <= 1f)
+            {
+                canShoot = true; // Condition 1: Same level
+                Debug.LogError("Check 1");
+
+            }
+            else if (currentDistance >= 1f && currentDistance <= 4f)
+            {
+                canShoot = true; // Condition 2: 1 unit difference
+                Debug.LogError("Check 2");
+            }
+            else
+            {
+                canShoot = false; // Condition 3: More than 1 unit difference
+            }
+            
+            // Debug log every few frames to avoid spam
+            if (Time.frameCount % 60 == 0) // Log every 60 frames (about 1 second at 60fps)
+            {
+                Debug.Log($"[AI] Update - BowY: {Bow.position.y:F2}, TargetY: {Target.position.y:F2}");
+                Debug.Log($"[AI] Update - YDiff: {yDiff:F2}, |YDiff|: {currentDistance:F2}");
+                Debug.Log($"[AI] Update - Condition: {(currentDistance == 0f ? "Same Level" : currentDistance == 1f ? "1 Unit Diff" : "Too Far")}, CanShoot: {canShoot}");
+            }
+        }
+        else
+        {
+            canShoot = false;
+        }
     }
 
-    void StartRandomShooting()
+    void StartAiShooting()
     {
-        // 1 second wait કરો game start થાય તો
-        Invoke(nameof(AIShootCycle), 1f);
+        // 2 second wait કરો game start થાય તો
+        Invoke(nameof(AIShootCycle), shootInterval);
     }
     
     void AIShootCycle()
     {
         if (!aiAutoShoot) return;
-        
-        // Check if player and target Y positions are close (both Easy and Hard AI)
-        if (ArePositionsClose())
+
+        // Use the canShoot variable calculated in Update method
+        if (canShoot)
         {
-            Debug.Log($"{currentAIDifficulty} AI - Player and Target Y positions close - AI will shoot in 1 second!");
-            waitTimer = 0f; // Reset wait timer
-
-
-            float Temp = Random.Range(0, 1);
-            // Wait 1 second then shoot
-            Invoke(nameof(DelayedShoot), Temp);
+            Debug.Log($"{currentAIDifficulty} AI - Distance {currentDistance:F2} <= {maxShootDistance}. Shooting now!");
+            StartCoroutine(ShootArrow());
         }
         else
         {
-            waitTimer += shootInterval; // Add to wait timer
-            Debug.Log($"{currentAIDifficulty} AI - Player and Target Y positions not close - AI waiting... ({waitTimer}/{maxWaitTime})");
-            
-            // If waited too long, shoot anyway
-            if (waitTimer >= maxWaitTime)
-            {
-                Debug.Log("AI waited too long - shooting anyway!");
-                waitTimer = 0f; // Reset timer
-                
-                // Direct shoot without accuracy check
-                StartCoroutine(ShootArrow());
-            }
+            Debug.Log($"{currentAIDifficulty} AI - Distance {currentDistance:F2} > {maxShootDistance}. Waiting...");
         }
-        
+
+        // Schedule next check
         Invoke(nameof(AIShootCycle), shootInterval);
     }
-    bool ArePositionsClose()
-    {
-        if (playerTransform == null || targetTransform == null)
-        {
-            Debug.LogWarning("Player or Target Transform not assigned!");
-            return true; // If not assigned, shoot anyway
-        }
-        
-        // Get Y positions
-        float playerY = playerTransform.position.y;
-        float targetY = targetTransform.position.y;
-        
-        // Calculate Y position difference
-        float yDifference = Mathf.Abs(playerY - targetY);
-        
-        // If Y difference is within range, they are close
-        bool positionsClose = yDifference <= lineDetectionRange;
-        
-        Debug.Log($"Player Y: {playerY}, Target Y: {targetY}, Difference: {yDifference}, Positions Close: {positionsClose}");
-        
-        return positionsClose;
-    }
-    
-    // Delayed shoot function (called after 1 second delay)
-    void DelayedShoot()
-    {
-        Debug.Log($"{currentAIDifficulty} AI - 1 second delay completed - AI shooting now!");
-        StartCoroutine(ShootArrow());
-    }
-   
     public IEnumerator ShootArrow()
     {
         if (arrowPrefab == null)
@@ -141,12 +133,6 @@ public class AIArrowShooter : MonoBehaviour
             Debug.LogWarning("AI Arrow Prefab is not assigned!");
             yield break;
         }
-
-        canShoot = false;
-
-        yield return new WaitForSeconds(shootWaitTime);
-
-        // તીર instantiate કરો
         GameObject newArrow = Instantiate(arrowPrefab, spawnPosition, Quaternion.identity);
 
         // Rigidbody2D મળે તો force લગાવો
@@ -193,8 +179,86 @@ public class AIArrowShooter : MonoBehaviour
             Destroy(newArrow);
         }
 
-        canShoot = true;
-        Debug.Log("AI Arrow Shot! Force: " + shootForce);
+    }
+
+    // Method to find and assign blue target
+    public void AssignBlueTarget()
+    {
+        // Find blue target by tag or name
+        GameObject blueTarget = GameObject.FindGameObjectWithTag("Blue");
+        
+        if (blueTarget == null)
+        {
+            // Try finding by name
+            blueTarget = GameObject.Find("BlueTarget");
+        }
+        
+        if (blueTarget == null)
+        {
+            // Try finding any object with "Blue" in the name
+            GameObject[] allObjects = FindObjectsOfType<GameObject>();
+            foreach (GameObject obj in allObjects)
+            {
+                if (obj.name.Contains("Blue") && obj.name.Contains("Target"))
+                {
+                    blueTarget = obj;
+                    break;
+                }
+            }
+        }
+        
+        if (blueTarget != null)
+        {
+            Target = blueTarget.transform;
+            Debug.Log($"[AI] Blue target assigned: {blueTarget.name} at position {Target.position}");
+        }
+        else
+        {
+            Debug.LogWarning("[AI] Blue target not found! Please check target setup.");
+        }
+    }
+
+    // Method to shoot towards the assigned target
+    public void ShootTowardsTarget()
+    {
+        if (Target != null)
+        {
+            // Calculate direction from AI to target
+            Vector3 direction = (Target.position - transform.position).normalized;
+            
+            // Use this direction for shooting
+            Debug.Log($"[AI] Shooting towards target at position: {Target.position}");
+            Debug.Log($"[AI] Shooting direction: {direction}");
+        }
+        else
+        {
+            Debug.LogWarning("[AI] Target not assigned! Cannot shoot towards target.");
+        }
+    }
+
+    // Method to get current distance using 3-condition logic
+    public float GetCurrentDistance()
+    {
+        if (Bow != null && Target != null)
+        {
+            float yDiff = Bow.position.y - Target.position.y;
+            return Mathf.Abs(yDiff);
+        }
+        return -1f; // Invalid distance
+    }
+
+    // Method to check if target is within range using 3-condition logic
+    public bool IsTargetInRange()
+    {
+        if (Bow != null && Target != null)
+        {
+            float yDiff = Bow.position.y - Target.position.y;
+            float distance = Mathf.Abs(yDiff);
+            
+            // 3 Conditions: 0, 1, or >1
+            return distance == 0f || distance == 1f;
+        }
+        return false;
     }
 }
 

@@ -58,11 +58,20 @@ public class GameInitializer : NetworkBehaviour
     private void InitializeAIMode()
     {
         GameManager.Instance.AiModeSpawnPlayer();
+        
+        // Start countdown after AI is spawned
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.CountDownStart();
+        }
     }
 
     private void InitializeMultiplayerMode()
     {
-       
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.CountDownStart();
+        }
     }
 
 }

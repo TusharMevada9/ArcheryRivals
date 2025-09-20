@@ -42,7 +42,7 @@ public class GameManager : MonoBehaviour
 
 
         Instantiate(GameInitializer.Instance.SingleBlueBow, BlueBowspawn.position,Quaternion.Euler(0,0,180));
-        Instantiate(GameInitializer.Instance.SingleBlueTarget, RedTargetPoint.position, Quaternion.identity);
+        Instantiate(GameInitializer.Instance.SingleBlueTarget, BlueTargetPoint.position, Quaternion.identity);
     }
 
 
@@ -50,12 +50,13 @@ public class GameManager : MonoBehaviour
     {
 
         Debug.Log("Runner Local Player Id");
+        UIManager.Instance.isMultiplayerMode = true;
 
         if (runner.LocalPlayer.PlayerId == 1)
         {
             Debug.Log("[GameManager] Spawning Player 1 (Local Player) at player spawn point");
 
-           // UIManager.instance.YOUText.text = "You";
+            // UIManager.instance.YOUText.text = "You";
             //UIManager.instance.OpponentText.text = "Opponent";
 
             NetworkObject playerObj = runner.Spawn(GameInitializer.Instance.RedBow, RedBowspawn.position, Quaternion.identity);
@@ -64,16 +65,16 @@ public class GameManager : MonoBehaviour
             playerID = 1;
 
             playerCarBehaviour = playerObj.GetComponent<ArrowShooterMultiPlayer>();
-          
+
         }
         else
         {
             Debug.Log("[GameManager] Spawning Player 2 (Opponent) at AI spawn point");
-          
-           // UIManager.instance.YOUText.text = "Opponent";
+
+            // UIManager.instance.YOUText.text = "Opponent";
             //UIManager.instance.OpponentText.text = "You";
 
-            NetworkObject playerObj = runner.Spawn(GameInitializer.Instance.BlueBow, BlueBowspawn.position, Quaternion.Euler(0,0,180));
+            NetworkObject playerObj = runner.Spawn(GameInitializer.Instance.BlueBow, BlueBowspawn.position, Quaternion.Euler(0, 0, 180));
             runner.Spawn(GameInitializer.Instance.BlueTarget, BlueTargetPoint.position, Quaternion.identity);
 
             playerID = 2;
@@ -81,12 +82,22 @@ public class GameManager : MonoBehaviour
 
         }
 
+
         if (runner.ActivePlayers.Count() >= 2)
         {
             Debug.Log("[GameManager] Both players joined - waiting for countdown to finish");
         }
 
         yield return new WaitForSeconds(0.1f);
+    }
+    
+
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_StartCountdown()
+    {
+        UIManager.Instance.CountDownStart();
+        UIManager.Instance.OnBothPlayersJoined();
     }
 
 }
