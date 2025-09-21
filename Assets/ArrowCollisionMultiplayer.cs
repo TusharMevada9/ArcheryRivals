@@ -81,14 +81,14 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     public void RPCRedScore()
     {
         UIManager.Instance.redScore += 1;
-        UIManager.Instance.redScoreText.text = "Red Score: " + UIManager.Instance.redScore.ToString();
+        UIManager.Instance.redScoreText.text =  UIManager.Instance.redScore.ToString();
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCBlueScore()
     {
         UIManager.Instance.blueScore += 1;
-        UIManager.Instance.blueScoreText.text = "Blue Score: " + UIManager.Instance.blueScore.ToString();
+        UIManager.Instance.blueScoreText.text = UIManager.Instance.blueScore.ToString();
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

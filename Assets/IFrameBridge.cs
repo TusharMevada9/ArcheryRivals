@@ -53,78 +53,23 @@ public class IFrameBridge : MonoBehaviour
 
 	[DllImport("__Internal")]
 	private static extern int IsMobileWeb();
+#else
+	// Fallback methods for non-WebGL builds
+	private static string GetURLParameters() { return "{}"; }
+	private static void SendMatchResult(string matchId, string playerId, string opponentId, string outcome, int score, int opponentScore) { }
+	private static void SendMatchAbort(string message, string error, string errorCode) { }
+	private static void SendGameState(string state) { }
+	private static void SendBuildVersion(string version) { }
+	private static void SendGameReady() { }
+	private static int IsMobileWeb() { return 0; }
 #endif
 
-    // Fallback methods for non-WebGL builds
-    private string GetURLParametersFallback()
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		return "";
-#else
-        return "";
-#endif
-    }
 
-    private void SendMatchResultFallback(string matchId, string playerId, string opponentId, string outcome, int score, int opponentScore)
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		Debug.Log($"[IFrameBridge] WebGL: SendMatchResult - {outcome} (Score: {score}, Opponent: {opponentScore})");
-#else
-        Debug.Log($"[IFrameBridge] Non-WebGL: SendMatchResult - {outcome} (Score: {score}, Opponent: {opponentScore})");
-#endif
-    }
 
-    private void SendMatchAbortFallback(string message, string error, string errorCode)
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		Debug.Log($"[IFrameBridge] WebGL: SendMatchAbort - {message} (Error: {error}, Code: {errorCode})");
-#else
-        Debug.Log($"[IFrameBridge] Non-WebGL: SendMatchAbort - {message} (Error: {error}, Code: {errorCode})");
-#endif
-    }
 
-    private void SendGameStateFallback(string state)
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		Debug.Log($"[IFrameBridge] WebGL: SendGameState - {state}");
-#else
-        Debug.Log($"[IFrameBridge] Non-WebGL: SendGameState - {state}");
-#endif
-    }
 
-    private void SendBuildVersionFallback(string version)
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		Debug.Log($"[IFrameBridge] WebGL: SendBuildVersion - {version}");
-#else
-        Debug.Log($"[IFrameBridge] Non-WebGL: SendBuildVersion - {version}");
-#endif
-    }
 
-    private void SendGameReadyFallback()
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		Debug.Log("[IFrameBridge] WebGL: SendGameReady");
-#else
-        Debug.Log("[IFrameBridge] Non-WebGL: SendGameReady");
-#endif
-    }
 
-    private int IsMobileWebFallback()
-    {
-#if UNITY_WEBGL && !UNITY_EDITOR
-		// In WebGL builds, this will be replaced by JavaScript implementation
-		return 0;
-#else
-        return 0;
-#endif
-    }
 
 
 

@@ -61,9 +61,10 @@ public class ArrowCollision : MonoBehaviour
         }
 
         Vector2 Pos = targetCollider.transform.position;
-        Pos.x -= 0.3f;
+        Pos.x -= 0.35f;
         GameObject New = Instantiate(ArrowHitPrefab, targetCollider.transform.position, Quaternion.identity);
         New.transform.SetParent(this.gameObject.transform);
+
         Destroy(targetCollider.gameObject);
 
 

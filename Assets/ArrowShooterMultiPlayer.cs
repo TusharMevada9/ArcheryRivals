@@ -20,31 +20,76 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     public bool resetVelocityOnSpawn = true; // spawn પર velocity reset કરવી છે કે નહીં
     public bool useDirectVelocity = true; // velocity directly set કરવી છે કે force લગાવવું છે
 
-
+    public GameObject BowClickImage;
+    public GameObject BowNoClickImage;
+    
+    [Header("Shooting Cooldown")]
+    public float shootCooldown = 1f; // 1 second cooldown between shots
+    private bool canShoot = true; // Flag to check if player can shoot
+    
+    [Header("Hold to Shoot")]
+    public float holdTimeRequired = 1f; // 1 second hold required
+    private float holdTimer = 0f; // Timer for holding space
+    private bool isHoldingSpace = false; // Flag to track if space is being held
+    private bool canReleaseToShoot = false; // Flag to check if can shoot on release
     void Start()
     {
-        // જો shootPoint set નથી કર્યું તો bow ની position ઉપયોગ કરો
         if (shootPoint == null)
         {
             shootPoint = transform;
         }
     }
     public Vector3 spawnPosition;
-    public bool isForceApplied = false;
+
     void Update()
     {
-
         if (Object.HasStateAuthority)
         {
+            if (Input.GetKey(KeyCode.Space) && canShoot)
+            {
+                if (!isHoldingSpace)
+                {
+                    isHoldingSpace = true;
+                    holdTimer = 0f;
+                    canReleaseToShoot = false;
+                    Debug.Log("[Multiplayer] Started holding Space - Hold for 1 second to shoot!");
+                }
 
-            if (isForceApplied == true)
-            {
-                isForceApplied = false;
-                StartCoroutine(ShootArrow());
+               
+
+
+                holdTimer += Time.deltaTime;
+                
+                if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
+                {
+                    canReleaseToShoot = true;
+                    RPCFalse();
+                    Debug.Log("[Multiplayer] ✅ Hold time completed! Ready to shoot on release!");
+                }
             }
-            if (Input.GetKeyUp(KeyCode.Space))
+            else
             {
-                isForceApplied = true;
+                if (isHoldingSpace)
+                {
+                    isHoldingSpace = false;
+                    
+                    if (canReleaseToShoot && canShoot)
+                    {
+                        Debug.Log("[Multiplayer] 🏹 Shooting arrow after successful 1-second hold!");
+                        
+                        StartCoroutine(ShootArrow());
+                        StartCoroutine(ShootingCooldown());
+                    }
+                    else if (holdTimer < holdTimeRequired)
+                    {
+                        Debug.Log($"[Multiplayer] ❌ Hold time too short! ({holdTimer:F2}s / {holdTimeRequired}s) - Need to hold longer!");
+                    }
+                    
+                    holdTimer = 0f;
+                    canReleaseToShoot = false;
+                }
+
+                RPCTrue();
             }
 
             spawnPosition = this.gameObject.transform.position;
@@ -111,5 +156,43 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         Debug.Log("Arrow Shot! Force: " + shootForce);
     }
 
+    // Shooting cooldown coroutine
+    private IEnumerator ShootingCooldown()
+    {
+        canShoot = false; // Disable shooting
+        Debug.Log($"[Multiplayer] Shooting cooldown started - {shootCooldown} seconds");
+        
+        yield return new WaitForSeconds(shootCooldown);
+        
+        canShoot = true; // Re-enable shooting
+        Debug.Log("[Multiplayer] Shooting cooldown finished - Ready to shoot!");
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCTrue()
+    {
+        if (BowClickImage != null)
+        {
+            BowClickImage.SetActive(false);
+        }
+        if (BowNoClickImage != null)
+        {
+            BowNoClickImage.SetActive(true);
+        }
+    }
+
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCFalse()
+    {
+        if (BowClickImage != null)
+        {
+            BowClickImage.SetActive(true);
+        }
+        if (BowNoClickImage != null)
+        {
+            BowNoClickImage.SetActive(false);
+        }
+    }
 
 }

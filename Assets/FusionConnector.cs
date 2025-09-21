@@ -84,34 +84,34 @@ public class FusionConnector : MonoBehaviour, INetworkRunnerCallbacks
     {
         bool isOpponent = player != runner.LocalPlayer;
 
-        //if (isOpponent)
-        //{
-        //    Debug.Log($"[FusionConnector] Opponent {player} left the game - triggering forfeit");
-        //    if (IFrameBridge.Instance != null)
-        //    {
-        //        IFrameBridge.Instance.PostOpponentForfeit(IFrameBridge.OpponentId);
-        //    }
-        //    // End match locally showing a win for the remaining player
-        //    var ui = FindFirstObjectByType<UIManager>();
-        //    if (ui != null)
-        //    {
-        //        ui.EndMatchForForfeit(true);
-        //    }
-        //}
-        //else
-        //{
-        //    Debug.Log($"[FusionConnector] Local player {player} left the game");
-        //    if (IFrameBridge.Instance != null)
-        //    {
-        //        IFrameBridge.Instance.PostPlayerForfeit();
-        //    }
-        //    // End match locally showing a loss for the leaver
-        //    var ui = FindFirstObjectByType<UIManager>();
-        //    if (ui != null)
-        //    {
-        //        ui.EndMatchForForfeit(false);
-        //    }
-        //}
+        if (isOpponent)
+        {
+           Debug.Log($"[FusionConnector] Opponent {player} left the game - Local player wins!");
+           if (IFrameBridge.Instance != null)
+           {
+               IFrameBridge.Instance.PostOpponentForfeit(IFrameBridge.OpponentId);
+           }
+           // End match locally showing a win for the remaining player
+           var ui = FindFirstObjectByType<UIManager>();
+           if (ui != null)
+           {
+               ui.EndMatchForForfeit(true); // Local player wins when opponent leaves
+           }
+        }
+        else
+        {
+           Debug.Log($"[FusionConnector] Local player {player} left the game - Local player loses!");
+           if (IFrameBridge.Instance != null)
+           {
+               IFrameBridge.Instance.PostPlayerForfeit();
+           }
+           // End match locally showing a loss for the leaver
+           var ui = FindFirstObjectByType<UIManager>();
+           if (ui != null)
+           {
+               ui.EndMatchForForfeit(false); // Local player loses when they leave
+           }
+        }
     }
 
     // Implement other INetworkRunnerCallbacks as empty or with basic logging

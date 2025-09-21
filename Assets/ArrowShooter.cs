@@ -18,6 +18,18 @@ public class ArrowShooter : MonoBehaviour
     public bool resetVelocityOnSpawn = true; // spawn પર velocity reset કરવી છે કે નહીં
     public bool useDirectVelocity = true; // velocity directly set કરવી છે કે force લગાવવું છે
 
+    public GameObject BowClickImage;
+    public GameObject BowNoClickImage;
+
+    [Header("Shooting Cooldown")]
+    public float shootCooldown = 1f; // 1.5 seconds cooldown between shots
+    private bool canShoot = true; // Flag to check if player can shoot
+
+    [Header("Hold to Shoot")]
+    public float holdTimeRequired = 1f; // 2 seconds hold required
+    private float holdTimer = 0f; // Timer for holding space
+    private bool isHoldingSpace = false; // Flag to track if space is being held
+    private bool canReleaseToShoot = false; // Flag to check if can shoot on release
 
     void Start()
     {
@@ -27,19 +39,64 @@ public class ArrowShooter : MonoBehaviour
         }
     }
     public Vector3 spawnPosition;
-    public bool isForceApplied = false;
     void Update()
     {
-        // Space key ઉપર તીર શૂટ કરવા માટે
+        // Space key hold logic
+        if (Input.GetKey(KeyCode.Space) && canShoot)
+        {
+            if (!isHoldingSpace)
+            {
+                isHoldingSpace = true;
+                holdTimer = 0f;
+                canReleaseToShoot = false;
+                Debug.Log("[ArrowShooter] Started holding Space - Hold for 2 seconds to shoot!");
+            }
 
-        if (isForceApplied == true)
-        {
-            isForceApplied = false;
-            StartCoroutine(ShootArrow());
+            holdTimer += Time.deltaTime;
+
+            // Check if held long enough to shoot
+            if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
+            {
+                canReleaseToShoot = true;
+                BowClickImage.SetActive(true);
+                BowNoClickImage.SetActive(false);
+                Debug.Log("[ArrowShooter] ✅ Hold time completed! Ready to shoot on release!");
+            }
         }
-        if (Input.GetKeyUp(KeyCode.Space))
+        else
         {
-            isForceApplied = true;
+            // Space not held or can't shoot
+            if (isHoldingSpace)
+            {
+                isHoldingSpace = false;
+
+                // Check if held long enough to shoot
+                if (canReleaseToShoot && canShoot)
+                {
+                    Debug.Log("[ArrowShooter] 🏹 Shooting arrow after successful 2-second hold!");
+
+                    // Shoot arrow and start cooldown
+                    StartCoroutine(ShootArrow());
+                    StartCoroutine(ShootingCooldown());
+                }
+                else if (holdTimer < holdTimeRequired)
+                {
+                    Debug.Log($"[ArrowShooter] ❌ Hold time too short! ({holdTimer:F2}s / {holdTimeRequired}s) - Need to hold longer!");
+                }
+
+                holdTimer = 0f;
+                canReleaseToShoot = false;
+            }
+
+            // Show BowNoClickImage when not holding
+            if (BowClickImage != null)
+            {
+                BowClickImage.SetActive(false);
+            }
+            if (BowNoClickImage != null)
+            {
+                BowNoClickImage.SetActive(true);
+            }
         }
 
         spawnPosition = this.gameObject.transform.position;
@@ -99,10 +156,22 @@ public class ArrowShooter : MonoBehaviour
 
         if (newArrow != null)
         {
-            Destroy(newArrow,3f);
+            Destroy(newArrow, 3f);
         }
 
         Debug.Log("Arrow Shot! Force: " + shootForce);
+    }
+
+    // Shooting cooldown coroutine
+    private IEnumerator ShootingCooldown()
+    {
+        canShoot = false; // Disable shooting
+        Debug.Log($"[ArrowShooter] Shooting cooldown started - {shootCooldown} seconds");
+
+        yield return new WaitForSeconds(shootCooldown);
+
+        canShoot = true; // Re-enable shooting
+        Debug.Log("[ArrowShooter] Shooting cooldown finished - Ready to shoot!");
     }
 
 }

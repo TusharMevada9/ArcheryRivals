@@ -38,11 +38,6 @@ public class GameInitializer : NetworkBehaviour
         }
     }
 
-    void Start()
-    {
-
-    }
-
     public void InitializeMatch()
     {
         if (IFrameBridge.Instance != null && IFrameBridge.Instance.gameType == GameType.Singleplayer)

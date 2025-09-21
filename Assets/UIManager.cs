@@ -78,11 +78,123 @@ public class UIManager : MonoBehaviour
     {
         Debug.Log("[UIManager] OnBothPlayersJoined called - starting multiplayer countdown");
 
-       // waitingForPlayers = false;
+        // waitingForPlayers = false;
         gameTimeRemaining = gameTimeMinutes * 60f;
+        isMultiplayerMode = true;
 
         Debug.LogError("Both");
 
+    }
+
+
+
+    // Force end match for player leave scenario (no draw, does not modify scores)
+    public void EndMatchForForfeit(bool localWins)
+    {
+        if (gameEnded) return;
+        gameEnded = true;
+
+        // Stop the game when match ends
+        isGameStart = false;
+
+       // ShowWinnerPanel();
+
+        winnerPanel.SetActive(true);
+
+        winImage.gameObject.SetActive(true);
+
+        // Hide all result images first
+        if (winImage != null) winImage.gameObject.SetActive(false);
+        if (loseImage != null) loseImage.gameObject.SetActive(false);
+        if (drawImage != null) drawImage.gameObject.SetActive(false);
+
+        if (localWins)
+        {
+            if (winImage != null)
+            {
+                winImage.gameObject.SetActive(true);
+            }
+            // Send result after delay
+            StartCoroutine(SendMatchResultToPlatformDelayed("won", GetLocalPlayerScoreForReport(), 5f, GetOpponentScoreForReport()));
+        }
+        else
+        {
+            if (loseImage != null)
+            {
+                loseImage.gameObject.SetActive(true);
+            }
+            // Send result after delay
+            StartCoroutine(SendMatchResultToPlatformDelayed("lost", GetLocalPlayerScoreForReport(), 5f, GetOpponentScoreForReport()));
+        }
+    }
+
+
+    public int GetLocalPlayerScoreForReport()
+    {
+        // In multiplayer, local pid decides which score to report
+        if (isMultiplayerMode)
+        {
+            int localPid = -1;
+            if (FusionConnector.instance != null && FusionConnector.instance.NetworkRunner != null)
+            {
+                localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
+            }
+            else if (FusionConnector.instance != null && FusionConnector.instance.NetworkRunner != null)
+            {
+                localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
+            }
+            // Blue (P1) maps to playerScore, Red (P2) maps to aiScore
+            if (localPid == 2) return blueScore;
+            return redScore;
+        }
+        // Single player: playerScore is the local player's score
+        return redScore;
+    }
+
+    // Helper to determine opponent score for reporting without changing UI or rules
+    public int GetOpponentScoreForReport()
+    {
+        // In multiplayer, local pid decides which score is the opponent
+        if (isMultiplayerMode)
+        {
+            int localPid = -1;
+            if (FusionConnector.instance != null && FusionConnector.instance.NetworkRunner != null)
+            {
+                localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
+            }
+            else if (FusionConnector.instance != null && FusionConnector.instance.NetworkRunner != null)
+            {
+                localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
+            }
+            // Blue (P1) maps to playerScore, Red (P2) maps to aiScore
+            if (localPid == 2) return redScore; // If local is Red, opponent is Blue
+            return blueScore; // If local is Blue, opponent is Red
+        }
+        // Single player: aiScore is the opponent's score
+        return blueScore;
+    }
+
+    public System.Collections.IEnumerator SendMatchResultToPlatformDelayed(string outcome, int score, float delaySeconds, int opponentScore = 0)
+    {
+        float end = Time.realtimeSinceStartup + Mathf.Max(0f, delaySeconds);
+        while (Time.realtimeSinceStartup < end)
+        {
+            yield return null;
+        }
+        SendMatchResultToPlatform(outcome, score, opponentScore);
+    }
+
+    private void SendMatchResultToPlatform(string outcome, int score, int opponentScore = 0)
+    {
+        if (IFrameBridge.Instance != null)
+        {
+            IFrameBridge.Instance.SendMatchResultToPlatform(outcome, score, opponentScore);
+            Debug.Log($"[UIManager] Match result sent to platform: {outcome} (Score: {score}, Opponent: {opponentScore})");
+        }
+        else
+        {
+            Debug.LogWarning("[UIManager] IFrameBridge not found - cannot send match result to platform");
+        }
     }
 
     void Update()
@@ -117,7 +229,7 @@ public class UIManager : MonoBehaviour
     {
         redScore = score;
         if (redScoreText != null)
-            redScoreText.text = "Red Score: " + redScore.ToString();
+            redScoreText.text = redScore.ToString();
     }
 
     public void AddRedScore(int points)
@@ -129,7 +241,7 @@ public class UIManager : MonoBehaviour
     {
         blueScore = score;
         if (blueScoreText != null)
-            blueScoreText.text = "Blue Score: " + blueScore.ToString();
+            blueScoreText.text = blueScore.ToString();
     }
 
     public void AddBlueScore(int points)
@@ -171,13 +283,9 @@ public class UIManager : MonoBehaviour
             timerText.text = timeString;
 
             // Change color to red when 30 seconds or less remain
-            if (gameTimeRemaining <= 30f)
+            if (gameTimeRemaining <= 10f)
             {
                 timerText.color = Color.red;
-            }
-            else
-            {
-                timerText.color = Color.black;
             }
         }
         else
