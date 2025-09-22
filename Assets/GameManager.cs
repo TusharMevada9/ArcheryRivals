@@ -56,8 +56,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("[GameManager] Spawning Player 1 (Local Player) at player spawn point");
 
-            // UIManager.instance.YOUText.text = "You";
-            //UIManager.instance.OpponentText.text = "Opponent";
+             UIManager.Instance.RedImage.SetActive(true);
+            UIManager.Instance.BlueImage.SetActive(false);
 
             NetworkObject playerObj = runner.Spawn(GameInitializer.Instance.RedBow, RedBowspawn.position, Quaternion.identity);
 
@@ -71,8 +71,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("[GameManager] Spawning Player 2 (Opponent) at AI spawn point");
 
-            // UIManager.instance.YOUText.text = "Opponent";
-            //UIManager.instance.OpponentText.text = "You";
+            UIManager.Instance.RedImage.SetActive(false);
+            UIManager.Instance.BlueImage.SetActive(true);
 
             NetworkObject playerObj = runner.Spawn(GameInitializer.Instance.BlueBow, BlueBowspawn.position, Quaternion.Euler(0, 0, 180));
             runner.Spawn(GameInitializer.Instance.BlueTarget, BlueTargetPoint.position, Quaternion.identity);

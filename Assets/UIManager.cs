@@ -16,6 +16,9 @@ public class UIManager : MonoBehaviour
 
     public bool isGameStart = false;
 
+    public GameObject RedImage;
+    public GameObject BlueImage;
+
     public static UIManager Instance { get; private set; }
 
     [Header("CountDownPanel")]
@@ -23,7 +26,6 @@ public class UIManager : MonoBehaviour
     public GameObject Image_CountDown1;
     public GameObject Image_CountDown2;
     public GameObject Image_CountDown3;
-    public GameObject Image_CountDownGO;
 
     [Header("Countdown Animation Settings")]
     public float punchScale = 1.3f;
@@ -350,7 +352,6 @@ public class UIManager : MonoBehaviour
         if (Image_CountDown1 != null) Image_CountDown1.SetActive(false);
         if (Image_CountDown2 != null) Image_CountDown2.SetActive(false);
         if (Image_CountDown3 != null) Image_CountDown3.SetActive(false);
-        if (Image_CountDownGO != null) Image_CountDownGO.SetActive(false);
 
         // Show "3" with punch animation
         Debug.Log("[UIManager] Countdown: 3");
@@ -381,18 +382,9 @@ public class UIManager : MonoBehaviour
         }
         yield return new WaitForSeconds(1f);
 
-        // Hide "1" and show "GO!" with bigger punch animation
-        Debug.Log("[UIManager] Countdown: GO!");
+        // Hide "1" and start the game
+        Debug.Log("[UIManager] Countdown: Game Start!");
         if (Image_CountDown1 != null) Image_CountDown1.SetActive(false);
-        if (Image_CountDownGO != null)
-        {
-            Image_CountDownGO.SetActive(true);
-            // Bigger punch for GO!
-            Image_CountDownGO.transform.localScale = Vector3.one;
-            Image_CountDownGO.transform.DOPunchScale(Vector3.one * (punchScale * 1.5f - 1f), punchDuration * 1.5f, 15, 1f)
-                .SetEase(Ease.OutBounce);
-        }
-        yield return new WaitForSeconds(1f);
 
         // Hide countdown panel
         CountDownPanel.SetActive(false);

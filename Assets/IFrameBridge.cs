@@ -64,15 +64,6 @@ public class IFrameBridge : MonoBehaviour
 	private static int IsMobileWeb() { return 0; }
 #endif
 
-
-
-
-
-
-
-
-
-
     private void Awake()
     {
         if (Instance == null)
@@ -149,10 +140,10 @@ public class IFrameBridge : MonoBehaviour
 #else
         // Use test data in editor/non-WebGL builds - CHOOSE MODE HERE:
         // FOR AI MODE TESTING (uncomment this line):
-        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a912345678\"}";
+        string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a912345678\"}";
 
         //FOR MULTIPLAYER MODE TESTING (comment out the line above and uncomment this line):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+       // string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
 
         Debug.Log("Enter");
 
@@ -325,13 +316,24 @@ public class IFrameBridge : MonoBehaviour
                 + opponentScore.ToString()
         );
 
+        // Debug: Check if match parameters are set
+        Debug.Log($"[IFrameBridge] Match Parameters - MatchId: '{MatchId}', PlayerId: '{PlayerId}', OpponentId: '{OpponentId}'");
+        
+        if (string.IsNullOrEmpty(MatchId) || string.IsNullOrEmpty(PlayerId) || string.IsNullOrEmpty(OpponentId))
+        {
+            Debug.LogError("[IFrameBridge] Match parameters are not set! Cannot send match result to server.");
+            return;
+        }
+
         scoreSubmitted = false;
         submitTimer = 0f;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
+		Debug.Log($"[IFrameBridge] Sending match result to WebGL server: {outcome}");
 		SendMatchResult(MatchId, PlayerId, OpponentId, outcome, score, opponentScore);
 		StartCoroutine(WaitForScoreSubmission());
 #else
+        Debug.Log($"[IFrameBridge] Non-WebGL build - simulating match result submission");
         // In editor or non-WebGL builds, simulate submission after a short delay
         StartCoroutine(SimulateScoreSubmission());
 #endif
@@ -437,21 +439,21 @@ public class IFrameBridge : MonoBehaviour
     {
         Debug.Log($"[IFrameBridge] Opponent {opponentId} forfeited the match");
 
-        // Use the same simple approach as Maze-Muncher
+        // Send match result FIRST - this shows the win popup
+        UIManager uiManager = UnityEngine.Object.FindFirstObjectByType<UIManager>();
+        if (uiManager != null)
+        {
+            Debug.Log("[IFrameBridge] Sending WIN result for opponent forfeit");
+            uiManager.StartCoroutine(uiManager.SendMatchResultToPlatformDelayed("won", 
+                uiManager.GetLocalPlayerScoreForReport(), 0.1f, uiManager.GetOpponentScoreForReport()));
+        }
+        else
+        {
+            Debug.LogWarning("[IFrameBridge] UIManager not found - cannot send win result");
+        }
+
+        // Also send abort message for cleanup
         PostMatchAbort("Opponent left the game.", "", "");
-
-
-         //SendMatchResultToPlatform("won", UIManager.instance.GetLocalPlayerScoreForReport(), UIManager.instance.GetOpponentScoreForReport());
-
-        // Send match result using the same mechanism as normal game win
-        // This will use the correct scores and proper delay like EndMatchForForfeit
-        // UIManager uiManager = UnityEngine.Object.FindObjectOfType<UIManager>();
-        // if (uiManager != null)
-        // {
-        //     // Use the same delayed mechanism as normal game win
-        //     uiManager.StartCoroutine(uiManager.SendMatchResultToPlatformDelayed("won", 
-        //         uiManager.GetLocalPlayerScoreForReport(), 0.1f, uiManager.GetOpponentScoreForReport()));
-        // }
     }
 
     // Handle when local player leaves (should trigger opponent win)
@@ -459,18 +461,21 @@ public class IFrameBridge : MonoBehaviour
     {
         Debug.Log("[IFrameBridge] Local player forfeited the match");
 
-        // Use simple approach like Maze-Muncher
-        PostMatchAbort("You left the game.", "", "");
-
-        // Send match result using the same mechanism as normal game win
-        // This will use the correct scores and proper delay like EndMatchForForfeit
-        UIManager uiManager = UnityEngine.Object.FindObjectOfType<UIManager>();
+        // Send match result FIRST - this shows the lose popup
+        UIManager uiManager = UnityEngine.Object.FindFirstObjectByType<UIManager>();
         if (uiManager != null)
         {
-            // Use the same delayed mechanism as normal game win
-            //uiManager.StartCoroutine(uiManager.SendMatchResultToPlatformDelayed("lost", 
-            //    uiManager.GetLocalPlayerScoreForReport(), 5f, uiManager.GetOpponentScoreForReport()));
+            Debug.Log("[IFrameBridge] Sending LOSE result for player forfeit");
+            uiManager.StartCoroutine(uiManager.SendMatchResultToPlatformDelayed("lost", 
+                uiManager.GetLocalPlayerScoreForReport(), 0.1f, uiManager.GetOpponentScoreForReport()));
         }
+        else
+        {
+            Debug.LogWarning("[IFrameBridge] UIManager not found - cannot send lose result");
+        }
+
+        // Also send abort message for cleanup
+        PostMatchAbort("You left the game.", "", "");
     }
 
     public void AbortCriticalError(string error, string errorCode = "CRITICAL_ERROR")
@@ -591,4 +596,5 @@ public enum GameType
     Singleplayer,
     Multiplayer,
 }
+
 

@@ -32,8 +32,15 @@ mergeInto(LibraryManager.library, {
         // Send to parent window if in iframe
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({
-                type: 'matchResult',
-                data: result
+                type: 'match_result',
+                payload: {
+                    matchId: matchIdStr,
+                    playerId: playerIdStr,
+                    opponentId: opponentIdStr,
+                    outcome: outcomeStr,
+                    score: score,
+                    opponentScore: opponentScore
+                }
             }, '*');
         }
     },
@@ -54,8 +61,12 @@ mergeInto(LibraryManager.library, {
         // Send to parent window if in iframe
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({
-                type: 'matchAbort',
-                data: abortData
+                type: 'match_abort',
+                payload: {
+                    message: messageStr,
+                    error: errorStr,
+                    errorCode: errorCodeStr
+                }
             }, '*');
         }
     },
@@ -68,8 +79,10 @@ mergeInto(LibraryManager.library, {
         // Send to parent window if in iframe
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({
-                type: 'gameState',
-                data: stateStr
+                type: 'game_state',
+                payload: {
+                    state: stateStr
+                }
             }, '*');
         }
     },

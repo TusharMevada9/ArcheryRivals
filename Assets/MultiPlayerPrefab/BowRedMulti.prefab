@@ -215,8 +215,9 @@ MonoBehaviour:
   useDirectVelocity: 1
   BowClickImage: {fileID: 497200125248546593}
   BowNoClickImage: {fileID: 3448119707094427451}
+  shootCooldown: 1
+  holdTimeRequired: 0.5
   spawnPosition: {x: 0, y: 0, z: 0}
-  isForceApplied: 0
 --- !u!114 &8375576267228259881
 MonoBehaviour:
   m_ObjectHideFlags: 0
