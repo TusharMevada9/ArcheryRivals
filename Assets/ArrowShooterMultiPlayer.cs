@@ -22,16 +22,20 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
 
     public GameObject BowClickImage;
     public GameObject BowNoClickImage;
-    
+    public GameObject BowNoArrowClickImage;
+
     [Header("Shooting Cooldown")]
     public float shootCooldown = 1f; // 1 second cooldown between shots
     private bool canShoot = true; // Flag to check if player can shoot
-    
+
     [Header("Hold to Shoot")]
     public float holdTimeRequired = 0.5f; // 0.5 seconds hold required
     private float holdTimer = 0f; // Timer for holding space
     private bool isHoldingSpace = false; // Flag to track if space is being held
     private bool canReleaseToShoot = false; // Flag to check if can shoot on release
+
+    public bool isArrowGo;
+
     void Start()
     {
         if (shootPoint == null)
@@ -109,8 +113,10 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
                         }
                         canReleaseToShoot = false;
                     }
-
-                    RPCTrue();
+                    if(isArrowGo == false)
+                    {
+                        RPCTrue();
+                    }
                 }
 
                 spawnPosition = this.gameObject.transform.position;
@@ -127,7 +133,8 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         }
 
         NetworkObject newArrow = FusionConnector.instance.NetworkRunner.Spawn(arrowPrefab, spawnPosition, Quaternion.identity);
-
+        isArrowGo = true;
+        RPCNoArrowTrue();
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
         if (arrowRb != null)
         {
@@ -167,11 +174,16 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
             Debug.LogWarning("Arrow prefab doesn't have Rigidbody2D component!");
         }
 
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
+
+        isArrowGo = false;
+        RPCNoArrowfalse();
+
+        yield return new WaitForSeconds(2f);
 
         if (newArrow != null)
         {
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(2f);
             FusionConnector.instance.NetworkRunner.Despawn(newArrow);
         }
 
@@ -183,9 +195,9 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     {
         canShoot = false; // Disable shooting
         Debug.Log($"[Multiplayer] Shooting cooldown started - {shootCooldown} seconds");
-        
+
         yield return new WaitForSeconds(shootCooldown);
-        
+
         canShoot = true; // Re-enable shooting
         Debug.Log("[Multiplayer] Shooting cooldown finished - Ready to shoot!");
     }
@@ -217,6 +229,22 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         }
     }
 
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCNoArrowTrue()
+    {
+        BowClickImage.SetActive(false);
+        BowNoClickImage.SetActive(false);
+        BowNoArrowClickImage.SetActive(true);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCNoArrowfalse()
+    {
+        BowClickImage.SetActive(false);
+        BowNoArrowClickImage.SetActive(false);
+        BowNoClickImage.SetActive(true);
+    }
 
     //void FixedUpdateNetwork()
     //{

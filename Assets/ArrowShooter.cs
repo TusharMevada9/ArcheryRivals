@@ -32,6 +32,9 @@ public class ArrowShooter : MonoBehaviour
     private bool isHoldingSpace = false; // Flag to track if space is being held
     private bool canReleaseToShoot = false; // Flag to check if can shoot on release
 
+
+    public bool isArrowGo;
+
     void Start()
     {
         if (shootPoint == null)
@@ -110,24 +113,25 @@ public class ArrowShooter : MonoBehaviour
                         holdTimer = 0f;
                     }
                     canReleaseToShoot = false;
-                }
 
-                // Show BowNoClickImage when not holding
-                if (BowClickImage != null)
-                {
-                    BowClickImage.SetActive(false);
-                }
-                if (BowNoClickImage != null)
-                {
-                    BowNoClickImage.SetActive(true);
+                    if (isArrowGo == false)
+                    {
+                        if (BowClickImage != null)
+                        {
+                            BowClickImage.SetActive(false);
+                        }
+                        if (BowNoClickImage != null)
+                        {
+                            BowNoClickImage.SetActive(true);
+                        }
+                    }
+
                 }
             }
-
             spawnPosition = this.gameObject.transform.position;
         }
     }
 
-    // તીર શૂટ કરવાનું ફંક્શન
     public IEnumerator ShootArrow()
     {
         if (arrowPrefab == null)
@@ -137,6 +141,12 @@ public class ArrowShooter : MonoBehaviour
         }
 
         GameObject newArrow = Instantiate(arrowPrefab, spawnPosition, Quaternion.identity);
+        isArrowGo = true;
+
+        BowNoArrowClickImage.SetActive(true);
+        BowClickImage.SetActive(false);
+        BowNoClickImage.SetActive(false);
+
 
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
         if (arrowRb != null)
@@ -177,7 +187,14 @@ public class ArrowShooter : MonoBehaviour
             Debug.LogWarning("Arrow prefab doesn't have Rigidbody2D component!");
         }
 
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
+
+        isArrowGo = false;
+        BowNoArrowClickImage.SetActive(false);
+        BowClickImage.SetActive(false);
+        BowNoClickImage.SetActive(true);
+
+        yield return new WaitForSeconds(2f);
 
         if (newArrow != null)
         {

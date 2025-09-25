@@ -143,10 +143,10 @@ public class IFrameBridge : MonoBehaviour
 #else
         // Use test data in editor/non-WebGL builds - CHOOSE MODE HERE:
         // FOR AI MODE TESTING (uncomment this line):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"b912345678\"}";
+        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"b912345678\"}";
 
         //FOR MULTIPLAYER MODE TESTING (comment out the line above and uncomment this line):
-        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
 
         Debug.Log("Enter");
 
@@ -605,5 +605,6 @@ public enum GameType
     Singleplayer,
     Multiplayer,
 }
+
 
 

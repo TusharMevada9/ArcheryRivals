@@ -70,6 +70,15 @@ public class ArrowCollision : MonoBehaviour
         //Pos.x -= 0.35f;
         GameObject New = Instantiate(ArrowHitPrefab, targetCollider.transform.position, Quaternion.identity);
         New.transform.SetParent(this.gameObject.transform);
+        if (targetCollider.CompareTag("Red"))
+        {
+            New.transform.localPosition = new Vector2(-0.38f, New.transform.localPosition.y);
+        }
+        else
+        {
+            New.transform.localPosition = new Vector2(0.38f, New.transform.localPosition.y);
+
+        }
 
         Destroy(targetCollider.gameObject);
 

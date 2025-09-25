@@ -146,12 +146,14 @@ public class UIManager : MonoBehaviour
             {
                 localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
             }
-            else if (FusionConnector.instance != null && FusionConnector.instance.NetworkRunner != null)
-            {
-                localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
-            }
-            // Blue (P1) maps to playerScore, Red (P2) maps to aiScore
-            if (localPid == 2) return blueScore;
+            
+            Debug.Log($"[UIManager] GetLocalPlayerScoreForReport - LocalPid: {localPid}, RedScore: {redScore}, BlueScore: {blueScore}");
+            
+            // PlayerId 1 = Red, PlayerId 2 = Blue
+            if (localPid == 1) return redScore;  // Red player reports red score
+            if (localPid == 2) return blueScore; // Blue player reports blue score
+            
+            // Fallback
             return redScore;
         }
         // Single player: playerScore is the local player's score
@@ -169,13 +171,15 @@ public class UIManager : MonoBehaviour
             {
                 localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
             }
-            else if (FusionConnector.instance != null && FusionConnector.instance.NetworkRunner != null)
-            {
-                localPid = FusionConnector.instance.NetworkRunner.LocalPlayer.PlayerId;
-            }
-            // Blue (P1) maps to playerScore, Red (P2) maps to aiScore
-            if (localPid == 2) return redScore; // If local is Red, opponent is Blue
-            return blueScore; // If local is Blue, opponent is Red
+            
+            Debug.Log($"[UIManager] GetOpponentScoreForReport - LocalPid: {localPid}, RedScore: {redScore}, BlueScore: {blueScore}");
+            
+            // PlayerId 1 = Red, PlayerId 2 = Blue
+            if (localPid == 1) return blueScore; // Red player reports blue score as opponent
+            if (localPid == 2) return redScore;  // Blue player reports red score as opponent
+            
+            // Fallback
+            return blueScore;
         }
         // Single player: aiScore is the opponent's score
         return blueScore;
@@ -195,8 +199,12 @@ public class UIManager : MonoBehaviour
     {
         if (IFrameBridge.Instance != null)
         {
-            IFrameBridge.Instance.SendMatchResultToPlatform(outcome, score, opponentScore);
-            Debug.Log($"[UIManager] Match result sent to platform: {outcome} (Score: {score}, Opponent: {opponentScore})");
+            // Use the correct score reporting methods for multiplayer
+            int localScore = GetLocalPlayerScoreForReport();
+            int opponentScoreValue = GetOpponentScoreForReport();
+            
+            IFrameBridge.Instance.SendMatchResultToPlatform(outcome, localScore, opponentScoreValue);
+            Debug.Log($"[UIManager] Match result sent to platform: {outcome} (Local: {localScore}, Opponent: {opponentScoreValue})");
         }
         else
         {
@@ -596,8 +604,12 @@ public class UIManager : MonoBehaviour
         // Send to server via IFrameBridge
         if (IFrameBridge.Instance != null)
         {
-            IFrameBridge.Instance.SendMatchResultToPlatform(outcome, playerScore, opponentScore);
-            Debug.Log($"[UIManager] ✅ Match result sent to server: {outcome}");
+            // Use the correct score reporting methods for multiplayer
+            int localScore = GetLocalPlayerScoreForReport();
+            int opponentScoreValue = GetOpponentScoreForReport();
+            
+            IFrameBridge.Instance.SendMatchResultToPlatform(outcome, localScore, opponentScoreValue);
+            Debug.Log($"[UIManager] ✅ Match result sent to server: {outcome} (Local: {localScore}, Opponent: {opponentScoreValue})");
         }
         else
         {

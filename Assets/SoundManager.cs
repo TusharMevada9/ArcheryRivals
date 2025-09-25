@@ -90,26 +90,6 @@ public class SoundManager : MonoBehaviour
 				}
 			}
 
-			// if (musicSourceA == null)
-			// {
-			// 	musicSourceA = gameObject.AddComponent<AudioSource>();
-			// 	musicSourceA.playOnAwake = false;
-			// 	musicSourceA.loop = true;
-			// 	//musicSourceA.volume = musicVolume;
-			// 	//musicSourceA.spatialBlend = 0f;
-			// 	//musicSourceA.dopplerLevel = 0f;
-			// }
-
-			// if (musicSourceB == null)
-			// {
-			// 	musicSourceB = gameObject.AddComponent<AudioSource>();
-			// 	musicSourceB.playOnAwake = false;
-			// 	musicSourceB.loop = true;
-			// 	//musicSourceB.volume = musicVolume;
-			// 	//musicSourceB.spatialBlend = 0f;
-			// 	//musicSourceB.dopplerLevel = 0f;
-			// }
-
 			if (countdownSource == null)
 			{
 				countdownSource = gameObject.AddComponent<AudioSource>();
@@ -136,7 +116,23 @@ public class SoundManager : MonoBehaviour
 		}
 	}
 
-	public void PlayMusic(AudioClip musicClip, bool loop = true)
+    public void PlayMusic1()
+	{
+        AudioSource target = musicSourceA;
+        target.loop = true;
+        target.clip = bgMusic1;
+        target.Play();
+    }
+
+    public void PlayMusic2()
+    {
+        AudioSource target = musicSourceB;
+        target.loop = true;
+        target.clip = bgMusic2;
+        target.Play();
+    }
+
+    public void PlayMusic(AudioClip musicClip, bool loop = true)
 	{
 		if (musicClip == null)
 		{
@@ -226,7 +222,7 @@ public class SoundManager : MonoBehaviour
 		{
 			return;
 		}
-		sfxSource.PlayOneShot(clip);
+		sfxSource.PlayOneShot(clip, 0.5f);
 	}
 
 	public void PlayRandomBowRelease()
@@ -241,7 +237,7 @@ public class SoundManager : MonoBehaviour
 		{
 			return;
 		}
-		sfxSource.PlayOneShot(clip);
+		sfxSource.PlayOneShot(clip, 0.5f);
 	}
 
 	
@@ -262,19 +258,14 @@ public class SoundManager : MonoBehaviour
 
 	public void PlayBgMusic1()
 	{
-		if (bgMusic1 != null)
-		{
-			PlayMusic(bgMusic1, true);
-		}
-	}
+		PlayMusic1();
+
+    }
 
 	public void PlayBgMusic2()
 	{
-		if (bgMusic2 != null)
-		{
-			PlayMusic(bgMusic2, true);
-		}
-	}
+        PlayMusic2();
+    }
 	// Play individual countdown clips (3, 2, 1)
 	public void PlayCountdown3()
 	{

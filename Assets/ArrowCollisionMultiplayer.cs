@@ -111,6 +111,16 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     {
         HalfArrow.transform.localPosition = pos;
         HalfArrow.transform.SetParent(this.gameObject.transform);
+
+        if (targetTag == "Red")
+        {
+            HalfArrow.transform.localPosition = new Vector2(-0.38f, HalfArrow.transform.localPosition.y);
+        }
+        else
+        {
+            HalfArrow.transform.localPosition = new Vector2(0.38f, HalfArrow.transform.localPosition.y);
+
+        }
     }
 
 

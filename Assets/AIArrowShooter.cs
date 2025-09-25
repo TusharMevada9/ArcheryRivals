@@ -265,7 +265,7 @@ public class AIArrowShooter : MonoBehaviour
             Debug.LogWarning("AI Arrow prefab doesn't have Rigidbody2D component!");
         }
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1f);
 
         BowClickImage.SetActive(false);
         BowNoArrowClickImage.SetActive(false);
