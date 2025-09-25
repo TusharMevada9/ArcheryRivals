@@ -83,8 +83,9 @@ public class GameManager : MonoBehaviour
         }
 
 
-        if (runner.ActivePlayers.Count() >= 2)
+        if (runner.ActivePlayers.Count() <= 2)
         {
+            UIManager.Instance.WaitingForPlyersObj.SetActive(true);
             Debug.Log("[GameManager] Both players joined - waiting for countdown to finish");
         }
 

@@ -28,7 +28,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     private bool canShoot = true; // Flag to check if player can shoot
     
     [Header("Hold to Shoot")]
-    public float holdTimeRequired = 1f; // 1 second hold required
+    public float holdTimeRequired = 0.5f; // 0.5 seconds hold required
     private float holdTimer = 0f; // Timer for holding space
     private bool isHoldingSpace = false; // Flag to track if space is being held
     private bool canReleaseToShoot = false; // Flag to check if can shoot on release
@@ -43,56 +43,78 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
 
     void Update()
     {
-        if (Object.HasStateAuthority)
+        if (UIManager.Instance.isGameStart == true)
         {
-            if (Input.GetKey(KeyCode.Space) && canShoot)
+            if (Object.HasStateAuthority)
             {
-                if (!isHoldingSpace)
-                {
-                    isHoldingSpace = true;
-                    holdTimer = 0f;
-                    canReleaseToShoot = false;
-                    Debug.Log("[Multiplayer] Started holding Space - Hold for 1 second to shoot!");
-                }
+                // Check if space OR mouse button is held
+                bool isInputHeld = (Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)) && canShoot;
 
-               
-
-
-                holdTimer += Time.deltaTime;
-                
-                if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
+                if (isInputHeld)
                 {
-                    canReleaseToShoot = true;
-                    RPCFalse();
-                    Debug.Log("[Multiplayer] ✅ Hold time completed! Ready to shoot on release!");
-                }
-            }
-            else
-            {
-                if (isHoldingSpace)
-                {
-                    isHoldingSpace = false;
-                    
-                    if (canReleaseToShoot && canShoot)
+                    if (!isHoldingSpace)
                     {
-                        Debug.Log("[Multiplayer] 🏹 Shooting arrow after successful 1-second hold!");
-                        
-                        StartCoroutine(ShootArrow());
-                        StartCoroutine(ShootingCooldown());
+                        isHoldingSpace = true;
+                        holdTimer = 0f;
+                        canReleaseToShoot = false;
+                        Debug.Log("[Multiplayer] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
+
+                        // Play bow pull sound when hold starts (local only)
+                        if (SoundManager.Instance != null)
+                        {
+                            SoundManager.Instance.PlayRandomBowPull();
+                        }
                     }
-                    else if (holdTimer < holdTimeRequired)
+
+                    holdTimer += Time.deltaTime;
+
+                    if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
                     {
-                        Debug.Log($"[Multiplayer] ❌ Hold time too short! ({holdTimer:F2}s / {holdTimeRequired}s) - Need to hold longer!");
+                        canReleaseToShoot = true;
+                        RPCFalse();
+                        Debug.Log("[Multiplayer] ✅ Hold time completed! Ready to shoot on release!");
                     }
-                    
-                    holdTimer = 0f;
-                    canReleaseToShoot = false;
+                }
+                else
+                {
+                    if (isHoldingSpace)
+                    {
+                        // Check if space OR mouse button was released
+                        bool spaceReleased = Input.GetKeyUp(KeyCode.Space);
+                        bool mouseReleased = Input.GetMouseButtonUp(0);
+
+                        if (spaceReleased || mouseReleased)
+                        {
+                            isHoldingSpace = false;
+
+                            if (canReleaseToShoot && canShoot)
+                            {
+                                Debug.Log("[Multiplayer] 🏹 Shooting arrow after successful 0.5-second hold!");
+
+                                // Play bow release sound on successful shot (local only)
+                                if (SoundManager.Instance != null)
+                                {
+                                    SoundManager.Instance.PlayRandomBowRelease();
+                                }
+
+                                StartCoroutine(ShootArrow());
+                                StartCoroutine(ShootingCooldown());
+                            }
+                            else if (holdTimer < holdTimeRequired)
+                            {
+                                Debug.Log($"[Multiplayer] ❌ Hold time too short! ({holdTimer:F2}s / {holdTimeRequired}s) - Need to hold longer!");
+                            }
+
+                            holdTimer = 0f;
+                        }
+                        canReleaseToShoot = false;
+                    }
+
+                    RPCTrue();
                 }
 
-                RPCTrue();
+                spawnPosition = this.gameObject.transform.position;
             }
-
-            spawnPosition = this.gameObject.transform.position;
         }
     }
 
@@ -195,4 +217,20 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         }
     }
 
+
+    //void FixedUpdateNetwork()
+    //{
+    //    // Physics move with interpolation
+    //    if (Object.HasInputAuthority)
+    //    {
+    //        RPC_UpdatePosition(this.transform.position);
+    //    }
+    //}
+
+    //[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    //public void RPC_UpdatePosition(Vector3 newPos)
+    //{
+    //    // Server / StateAuthority side update
+    //    transform.position = newPos;
+    //}
 }

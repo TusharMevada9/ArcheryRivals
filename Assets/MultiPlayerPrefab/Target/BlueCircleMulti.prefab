@@ -200,6 +200,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 5269872580822232160}
   - {fileID: 567470527677584270}
   - {fileID: 2454132828392214454}
   ForceRemoteRenderTimeframe: 0
@@ -237,7 +238,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.04171998, y: 0.015250951}
+  m_Offset: {x: 0.1, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -247,5 +248,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.2362914, y: 0.7180276}
+  m_Size: {x: 0.028234124, y: 0.8429347}
   m_EdgeRadius: 0

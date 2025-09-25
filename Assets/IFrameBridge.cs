@@ -16,6 +16,7 @@ public class IFrameBridge : MonoBehaviour
     public static string MatchId { get; private set; } = string.Empty;
     public static string PlayerId { get; private set; } = string.Empty;
     public static string OpponentId { get; private set; } = string.Empty;
+    public static string Region { get; private set; } = string.Empty;
 
     // Bot difficulty from platform
     internal AIMode botLevel;
@@ -36,7 +37,9 @@ public class IFrameBridge : MonoBehaviour
 		string opponentId,
 		string outcome,
 		int score,
-		int opponentScore
+		int opponentScore,
+		int averagePing,
+		string region
 	);
 
 	[DllImport("__Internal")]
@@ -56,7 +59,7 @@ public class IFrameBridge : MonoBehaviour
 #else
 	// Fallback methods for non-WebGL builds
 	private static string GetURLParameters() { return "{}"; }
-	private static void SendMatchResult(string matchId, string playerId, string opponentId, string outcome, int score, int opponentScore) { }
+	private static void SendMatchResult(string matchId, string playerId, string opponentId, string outcome, int score, int opponentScore, int averagePing, string region) { }
 	private static void SendMatchAbort(string message, string error, string errorCode) { }
 	private static void SendGameState(string state) { }
 	private static void SendBuildVersion(string version) { }
@@ -132,7 +135,7 @@ public class IFrameBridge : MonoBehaviour
         if (string.IsNullOrEmpty(json))
         {
             Debug.LogWarning("[IFrameBridge] No URL parameters found in WebGL build, using fallback AI mode");
-            // Fallback to AI mode if no URL parameters
+            // Fallback to AI mode if no URL parameters (no local region default)
             string fallbackJson = "{\"matchId\":\"webgl_fallback\",\"playerId\":\"webgl_player\",\"opponentId\":\"b912345678\"}";
             InitParamsFromJS(fallbackJson);
             return;
@@ -140,10 +143,10 @@ public class IFrameBridge : MonoBehaviour
 #else
         // Use test data in editor/non-WebGL builds - CHOOSE MODE HERE:
         // FOR AI MODE TESTING (uncomment this line):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"a912345678\"}";
+        string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"b912345678\"}";
 
         //FOR MULTIPLAYER MODE TESTING (comment out the line above and uncomment this line):
-       // string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
 
         Debug.Log("Enter");
 
@@ -180,7 +183,7 @@ public class IFrameBridge : MonoBehaviour
 
 
         // 2. FOR MULTIPLAYER MODE TESTING (uncomment this line and comment out the line above):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\",\"region\":\"in\"}";
 
         InitParamsFromJS(json);
     }
@@ -219,9 +222,14 @@ public class IFrameBridge : MonoBehaviour
             MatchId = data.matchId;
             PlayerId = data.playerId;
             OpponentId = data.opponentId;
+            
+            // Handle region - default to "in" if not provided
+            Region = string.IsNullOrEmpty(data.region) ? "in" : data.region.Trim().ToLower();
+            
+            Debug.Log($"[IFrameBridge] Region received: '{Region}'");
 
             Debug.Log(
-                $"[IFrameBridge] Match parameters set - Match ID: {MatchId}, Player ID: {PlayerId}, Opponent ID: {OpponentId}"
+                $"[IFrameBridge] Match parameters set - Match ID: {MatchId}, Player ID: {PlayerId}, Opponent ID: {OpponentId}, Region: {Region}"
             );
 
             bool isOpponentBot = IsBot(OpponentId);
@@ -246,8 +254,8 @@ public class IFrameBridge : MonoBehaviour
             {
                 gameType = GameType.Multiplayer;
                 gameModeInitialized = true;
-                FusionConnector.instance.ConnectToServer(MatchId);
-                Debug.Log($"[IFrameBridge] MULTIPLAYER MODE INITIALIZED - gameType: {gameType}");
+                FusionConnector.instance.ConnectToServer(MatchId, Region);
+                Debug.Log($"[IFrameBridge] MULTIPLAYER MODE INITIALIZED - gameType: {gameType}, Region: {Region}");
 
             }
         }
@@ -279,7 +287,7 @@ public class IFrameBridge : MonoBehaviour
 
         if (FusionConnector.instance != null)
         {
-            FusionConnector.instance.ConnectToServer(MatchId);
+            FusionConnector.instance.ConnectToServer(MatchId, Region);
         }
         else
         {
@@ -329,8 +337,8 @@ public class IFrameBridge : MonoBehaviour
         submitTimer = 0f;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-		Debug.Log($"[IFrameBridge] Sending match result to WebGL server: {outcome}");
-		SendMatchResult(MatchId, PlayerId, OpponentId, outcome, score, opponentScore);
+		Debug.Log($"[IFrameBridge] Sending match result to WebGL server: {outcome}, Region: {Region}");
+		SendMatchResult(MatchId, PlayerId, OpponentId, outcome, score, opponentScore, 0, Region);
 		StartCoroutine(WaitForScoreSubmission());
 #else
         Debug.Log($"[IFrameBridge] Non-WebGL build - simulating match result submission");
@@ -577,7 +585,7 @@ public class IFrameBridge : MonoBehaviour
 #else
 		// On WebGL, external selection should work normally
 		ResetGameMode();
-		string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+		string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\",\"region\":\"in\"}";
 		InitParamsFromJS(json);
 #endif
     }
@@ -588,6 +596,7 @@ public class IFrameBridge : MonoBehaviour
         public string matchId = string.Empty;
         public string playerId = string.Empty;
         public string opponentId = string.Empty;
+        public string region = string.Empty;
     }
 }
 

@@ -339,5 +339,5 @@ MonoBehaviour:
   BowClickImage: {fileID: 4374296499670429626}
   BowNoClickImage: {fileID: 1946340080351862448}
   shootCooldown: 1
-  holdTimeRequired: 1
+  holdTimeRequired: 0.4
   spawnPosition: {x: 0, y: 0, z: 0}

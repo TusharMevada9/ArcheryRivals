@@ -20,13 +20,14 @@ public class ArrowShooter : MonoBehaviour
 
     public GameObject BowClickImage;
     public GameObject BowNoClickImage;
+    public GameObject BowNoArrowClickImage;
 
     [Header("Shooting Cooldown")]
     public float shootCooldown = 1f; // 1.5 seconds cooldown between shots
     private bool canShoot = true; // Flag to check if player can shoot
 
     [Header("Hold to Shoot")]
-    public float holdTimeRequired = 1f; // 2 seconds hold required
+    public float holdTimeRequired = 0.5f; // 0.5 seconds hold required
     private float holdTimer = 0f; // Timer for holding space
     private bool isHoldingSpace = false; // Flag to track if space is being held
     private bool canReleaseToShoot = false; // Flag to check if can shoot on release
@@ -41,65 +42,89 @@ public class ArrowShooter : MonoBehaviour
     public Vector3 spawnPosition;
     void Update()
     {
-        // Space key hold logic
-        if (Input.GetKey(KeyCode.Space) && canShoot)
-        {
-            if (!isHoldingSpace)
-            {
-                isHoldingSpace = true;
-                holdTimer = 0f;
-                canReleaseToShoot = false;
-                Debug.Log("[ArrowShooter] Started holding Space - Hold for 2 seconds to shoot!");
-            }
 
-            holdTimer += Time.deltaTime;
-
-            // Check if held long enough to shoot
-            if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
-            {
-                canReleaseToShoot = true;
-                BowClickImage.SetActive(true);
-                BowNoClickImage.SetActive(false);
-                Debug.Log("[ArrowShooter] ✅ Hold time completed! Ready to shoot on release!");
-            }
-        }
-        else
+        if (UIManager.Instance.isGameStart == true)
         {
-            // Space not held or can't shoot
-            if (isHoldingSpace)
+            bool isInputHeld = (Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)) && canShoot;
+
+            if (isInputHeld)
             {
-                isHoldingSpace = false;
+                if (!isHoldingSpace)
+                {
+                    isHoldingSpace = true;
+                    holdTimer = 0f;
+                    canReleaseToShoot = false;
+                    Debug.Log("[ArrowShooter] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
+
+                    // Play bow pull sound when hold starts
+                    if (SoundManager.Instance != null)
+                    {
+                        SoundManager.Instance.PlayRandomBowPull();
+                    }
+                }
+
+                holdTimer += Time.deltaTime;
 
                 // Check if held long enough to shoot
-                if (canReleaseToShoot && canShoot)
+                if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
                 {
-                    Debug.Log("[ArrowShooter] 🏹 Shooting arrow after successful 2-second hold!");
-
-                    // Shoot arrow and start cooldown
-                    StartCoroutine(ShootArrow());
-                    StartCoroutine(ShootingCooldown());
+                    canReleaseToShoot = true;
+                    BowClickImage.SetActive(true);
+                    BowNoClickImage.SetActive(false);
+                    Debug.Log("[ArrowShooter] ✅ Hold time completed! Ready to shoot on release!");
                 }
-                else if (holdTimer < holdTimeRequired)
+            }
+            else
+            {
+                // Input not held or can't shoot
+                if (isHoldingSpace)
                 {
-                    Debug.Log($"[ArrowShooter] ❌ Hold time too short! ({holdTimer:F2}s / {holdTimeRequired}s) - Need to hold longer!");
+                    // Check if space OR mouse button was released
+                    bool spaceReleased = Input.GetKeyUp(KeyCode.Space);
+                    bool mouseReleased = Input.GetMouseButtonUp(0);
+
+                    if (spaceReleased || mouseReleased)
+                    {
+                        isHoldingSpace = false;
+
+                        // Check if held long enough to shoot
+                        if (canReleaseToShoot && canShoot)
+                        {
+                            Debug.Log("[ArrowShooter] 🏹 Shooting arrow after successful 0.5-second hold!");
+
+                            // Play bow release sound on successful shot
+                            if (SoundManager.Instance != null)
+                            {
+                                SoundManager.Instance.PlayRandomBowRelease();
+                            }
+
+                            // Shoot arrow and start cooldown
+                            StartCoroutine(ShootArrow());
+                            StartCoroutine(ShootingCooldown());
+                        }
+                        else if (holdTimer < holdTimeRequired)
+                        {
+                            Debug.Log($"[ArrowShooter] ❌ Hold time too short! ({holdTimer:F2}s / {holdTimeRequired}s) - Need to hold longer!");
+                        }
+
+                        holdTimer = 0f;
+                    }
+                    canReleaseToShoot = false;
                 }
 
-                holdTimer = 0f;
-                canReleaseToShoot = false;
+                // Show BowNoClickImage when not holding
+                if (BowClickImage != null)
+                {
+                    BowClickImage.SetActive(false);
+                }
+                if (BowNoClickImage != null)
+                {
+                    BowNoClickImage.SetActive(true);
+                }
             }
 
-            // Show BowNoClickImage when not holding
-            if (BowClickImage != null)
-            {
-                BowClickImage.SetActive(false);
-            }
-            if (BowNoClickImage != null)
-            {
-                BowNoClickImage.SetActive(true);
-            }
+            spawnPosition = this.gameObject.transform.position;
         }
-
-        spawnPosition = this.gameObject.transform.position;
     }
 
     // તીર શૂટ કરવાનું ફંક્શન

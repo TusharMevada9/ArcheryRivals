@@ -1,22 +1,34 @@
 mergeInto(LibraryManager.library, {
+    GetDeviceType: function() {
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        return isMobile ? 1 : 0;
+    },
+
     GetURLParameters: function() {
-        var urlParams = new URLSearchParams(window.location.search);
-        var params = {};
-        for (var pair of urlParams.entries()) {
-            params[pair[0]] = pair[1];
-        }
-        var jsonString = JSON.stringify(params);
-        var bufferSize = lengthBytesUTF8(jsonString) + 1;
-        var buffer = _malloc(bufferSize);
-        stringToUTF8(jsonString, buffer, bufferSize);
+        var params = new URLSearchParams(window.location.search);
+        var matchId = params.get("matchId");
+        var playerId = params.get("playerId");
+        var opponentId = params.get("opponentId");
+        var region = params.get("region") || "in";
+
+        var jsonString = JSON.stringify({
+            matchId: matchId,
+            playerId: playerId,
+            opponentId: opponentId,
+            region: region
+        });
+
+        var buffer = _malloc(lengthBytesUTF8(jsonString) + 1);
+        stringToUTF8(jsonString, buffer, lengthBytesUTF8(jsonString) + 1);
         return buffer;
     },
 
-    SendMatchResult: function(matchId, playerId, opponentId, outcome, score, opponentScore) {
+    SendMatchResult: function(matchId, playerId, opponentId, outcome, score, opponentScore, averagePing, region) {
         var matchIdStr = UTF8ToString(matchId);
         var playerIdStr = UTF8ToString(playerId);
         var opponentIdStr = UTF8ToString(opponentId);
         var outcomeStr = UTF8ToString(outcome);
+        var regionStr = UTF8ToString(region);
         
         var result = {
             matchId: matchIdStr,
@@ -24,7 +36,9 @@ mergeInto(LibraryManager.library, {
             opponentId: opponentIdStr,
             outcome: outcomeStr,
             score: score,
-            opponentScore: opponentScore
+            opponentScore: opponentScore,
+            averagePing: averagePing,
+            region: regionStr
         };
         
         console.log("[WebGL] SendMatchResult:", result);
@@ -39,7 +53,9 @@ mergeInto(LibraryManager.library, {
                     opponentId: opponentIdStr,
                     outcome: outcomeStr,
                     score: score,
-                    opponentScore: opponentScore
+                    opponentScore: opponentScore,
+                    averagePing: averagePing,
+                    region: regionStr
                 }
             }, '*');
         }
@@ -71,44 +87,47 @@ mergeInto(LibraryManager.library, {
         }
     },
 
-    SendGameState: function(state) {
-        var stateStr = UTF8ToString(state);
-        
-        console.log("[WebGL] SendGameState:", stateStr);
-        
-        // Send to parent window if in iframe
+    SendScreenshot: function(base64Ptr) {
+        var base64 = UTF8ToString(base64Ptr);
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({
                 type: 'game_state',
                 payload: {
-                    state: stateStr
+                    state: base64
                 }
             }, '*');
         }
     },
 
-    SendBuildVersion: function(version) {
-        var versionStr = UTF8ToString(version);
-        
-        console.log("[WebGL] SendBuildVersion:", versionStr);
-        
-        // Send to parent window if in iframe
+    SendGameState: function(statePtr) {
+        var state = UTF8ToString(statePtr);
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({
-                type: 'buildVersion',
-                data: versionStr
+                type: 'game_state',
+                payload: {
+                    state: state
+                }
+            }, '*');
+        }
+    },
+
+    SendBuildVersion: function(versionPtr) {
+        var version = UTF8ToString(versionPtr);
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage({
+                type: 'build_version',
+                payload: {
+                    version: version
+                }
             }, '*');
         }
     },
 
     SendGameReady: function() {
-        console.log("[WebGL] SendGameReady");
-        
-        // Send to parent window if in iframe
         if (window.parent && window.parent !== window) {
             window.parent.postMessage({
-                type: 'gameReady',
-                data: 'ready'
+                type: 'game_ready',
+                payload: {}
             }, '*');
         }
     },

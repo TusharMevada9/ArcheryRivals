@@ -163,6 +163,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 8084050536434137398}
   - {fileID: 514690857409366970}
   - {fileID: 8375576267228259881}
   ForceRemoteRenderTimeframe: 0
@@ -216,7 +217,7 @@ MonoBehaviour:
   BowClickImage: {fileID: 497200125248546593}
   BowNoClickImage: {fileID: 3448119707094427451}
   shootCooldown: 1
-  holdTimeRequired: 0.5
+  holdTimeRequired: 0.4
   spawnPosition: {x: 0, y: 0, z: 0}
 --- !u!114 &8375576267228259881
 MonoBehaviour:

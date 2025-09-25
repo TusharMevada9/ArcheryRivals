@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using DG.Tweening;
+using Unity.VisualScripting;
 
 public class UIManager : MonoBehaviour
 {
@@ -51,6 +52,8 @@ public class UIManager : MonoBehaviour
 
     private double endTime;
 
+    public GameObject WaitingForPlyersObj;
+
     void Awake()
     {
         if (Instance == null)
@@ -84,6 +87,8 @@ public class UIManager : MonoBehaviour
         gameTimeRemaining = gameTimeMinutes * 60f;
         isMultiplayerMode = true;
 
+
+        UIManager.Instance.WaitingForPlyersObj.SetActive(false);
         Debug.LogError("Both");
 
     }
@@ -209,11 +214,23 @@ public class UIManager : MonoBehaviour
                 // --- Multiplayer: use synchronized Unix endTime ---
                 double now = GetUnixTimeNow();
                 gameTimeRemaining = (float)(endTime - now);
+                
+                // Ensure timer doesn't go below 0
+                if (gameTimeRemaining < 0)
+                {
+                    gameTimeRemaining = 0;
+                }
             }
             else
             {
                 // --- Singleplayer: local countdown ---
                 gameTimeRemaining -= Time.deltaTime;
+                
+                // Ensure timer doesn't go below 0
+                if (gameTimeRemaining < 0)
+                {
+                    gameTimeRemaining = 0;
+                }
             }
 
             UpdateTimerDisplay();
@@ -277,6 +294,12 @@ public class UIManager : MonoBehaviour
     {
         if (timerText != null)
         {
+            // Ensure timer doesn't go below 0
+            if (gameTimeRemaining < 0)
+            {
+                gameTimeRemaining = 0;
+            }
+            
             int minutes = Mathf.FloorToInt(gameTimeRemaining / 60f);
             int seconds = Mathf.FloorToInt(gameTimeRemaining % 60f);
 
@@ -284,7 +307,7 @@ public class UIManager : MonoBehaviour
             string timeString = string.Format("{0:00}:{1:00}", minutes, seconds);
             timerText.text = timeString;
 
-            // Change color to red when 30 seconds or less remain
+            // Change color to red when 10 seconds or less remain
             if (gameTimeRemaining <= 10f)
             {
                 timerText.color = Color.red;
@@ -353,16 +376,17 @@ public class UIManager : MonoBehaviour
         if (Image_CountDown2 != null) Image_CountDown2.SetActive(false);
         if (Image_CountDown3 != null) Image_CountDown3.SetActive(false);
 
-        // Show "3" with punch animation
+        // Show "3" with punch animation and sound
         Debug.Log("[UIManager] Countdown: 3");
         if (Image_CountDown3 != null)
         {
             Image_CountDown3.SetActive(true);
             PlayPunchAnimation(Image_CountDown3);
         }
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayCountdown3();
         yield return new WaitForSeconds(1f);
 
-        // Hide "3" and show "2" with punch animation
+        // Hide "3" and show "2" with punch animation and sound
         Debug.Log("[UIManager] Countdown: 2");
         if (Image_CountDown3 != null) Image_CountDown3.SetActive(false);
         if (Image_CountDown2 != null)
@@ -370,9 +394,10 @@ public class UIManager : MonoBehaviour
             Image_CountDown2.SetActive(true);
             PlayPunchAnimation(Image_CountDown2);
         }
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayCountdown2();
         yield return new WaitForSeconds(1f);
 
-        // Hide "2" and show "1" with punch animation
+        // Hide "2" and show "1" with punch animation and sound
         Debug.Log("[UIManager] Countdown: 1");
         if (Image_CountDown2 != null) Image_CountDown2.SetActive(false);
         if (Image_CountDown1 != null)
@@ -380,6 +405,7 @@ public class UIManager : MonoBehaviour
             Image_CountDown1.SetActive(true);
             PlayPunchAnimation(Image_CountDown1);
         }
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayCountdown1();
         yield return new WaitForSeconds(1f);
 
         // Hide "1" and start the game
@@ -398,6 +424,13 @@ public class UIManager : MonoBehaviour
         // Set isGameStart = true for AI shooting
         isGameStart = true;
         Debug.Log("[UIManager] Countdown finished! isGameStart = true - AI can now start shooting!");
+
+        // Switch to background music 2 for gameplay (simple looped play)
+        //if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBgMusic2();
+            SoundManager.Instance.PlayBgMusic1();
+        }
 
         // Start the 3-minute game timer
         StartGameTimer();
@@ -526,18 +559,21 @@ public class UIManager : MonoBehaviour
         if (loseImage != null) loseImage.gameObject.SetActive(false);
         if (drawImage != null) drawImage.gameObject.SetActive(false);
 
-        // Show appropriate result image
-        if (outcome == "won" && winImage != null)
+        // Show appropriate result image and play sound
+        if (outcome == "won")
         {
-            winImage.gameObject.SetActive(true);
+            if (winImage != null) winImage.gameObject.SetActive(true);
+            if (SoundManager.Instance != null) SoundManager.Instance.PlayWin();
         }
-        else if (outcome == "lost" && loseImage != null)
+        else if (outcome == "lost")
         {
-            loseImage.gameObject.SetActive(true);
+            if (loseImage != null) loseImage.gameObject.SetActive(true);
+            if (SoundManager.Instance != null) SoundManager.Instance.PlayLose();
         }
-        else if (outcome == "draw" && drawImage != null)
+        else if (outcome == "draw")
         {
-            drawImage.gameObject.SetActive(true);
+            if (drawImage != null) drawImage.gameObject.SetActive(true);
+            if (SoundManager.Instance != null) SoundManager.Instance.PlayDraw();
         }
 
         // Show final score

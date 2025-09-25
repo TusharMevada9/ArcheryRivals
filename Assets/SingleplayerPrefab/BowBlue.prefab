@@ -167,9 +167,28 @@ MonoBehaviour:
   resetVelocityOnSpawn: 1
   useDirectVelocity: 1
   currentAIDifficulty: 1
+  easyHitAccuracy: 0.65
+  hardHitAccuracy: 0.93
+  easyYAlignTolerance: 1
+  hardYAlignTolerance: 0.5
+  hardShootForceBonus: 1.15
+  requireBelowTarget: 1
+  belowApproachOffsetEasy: 0.08
+  belowApproachOffsetHard: 0.03
+  belowEpsilonEasy: 0.15
+  belowEpsilonHard: 0.02
+  nearCheckInterval: 0.2
+  nearWindowMultiplier: 2
+  hardLooseWindow: 1.2
+  hardQuickRetry: 0.08
+  fireImmediatelyOnAlign: 1
+  hardImmediateCooldown: 0.5
+  easyImmediateCooldown: 0.5
+  spawnGateDelay: 0.1
   isGameStart: 0
   BowClickImage: {fileID: 1275333205533703465}
   BowNoClickImage: {fileID: 8412572882857256533}
+  imageSwitchDuration: 0.5
 --- !u!1 &2509081874260106123
 GameObject:
   m_ObjectHideFlags: 0

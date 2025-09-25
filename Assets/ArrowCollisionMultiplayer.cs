@@ -1,8 +1,7 @@
 ﻿using Fusion;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
-using static Unity.Collections.Unicode;
 
 public class ArrowCollisionMultiplayer : NetworkBehaviour
 {
@@ -32,15 +31,24 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag(targetTag))
+        if (Object.HasStateAuthority)
         {
-            HandleCollision2D(other);
+            if (other.gameObject.CompareTag(targetTag))
+            {
+               HandleCollision2D(other);
+            }
         }
     }
 
     public void HandleCollision2D(Collider2D targetCollider)
     {
         Debug.LogError("Arrow hit target - will not be destroyed");
+
+        // Play arrow hit target SFX
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayRandomArrowHitTarget();
+        }
 
         if (HalfArrow != null) 
         {
@@ -58,17 +66,24 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
             RPCBlueScore();
         }
 
-        NetworkObject New = FusionConnector.instance.NetworkRunner.Spawn(SpawnArrow);
-        HalfArrow = New;
-        RPCTrueHalf(New);
+       
 
 
         Vector2 Pos = targetCollider.transform.position;
-        Pos.x -= 0.3f;
-
-        RPCPosHalf(Pos);
+        //Pos.x -= 0.3f;
         FusionConnector.instance.NetworkRunner.Despawn(targetCollider.GetComponent<NetworkObject>());
+
+        //yield return new WaitForSeconds(0.01f);
+        NetworkObject New = FusionConnector.instance.NetworkRunner.Spawn(SpawnArrow);
+        HalfArrow = New;
+        RPCTrueHalf(New);
+        RPCPosHalf(Pos);
     }
+
+    //public IEnumerator WaitTimeRpc()
+    //{
+
+    //}
 
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -97,4 +112,22 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
         HalfArrow.transform.localPosition = pos;
         HalfArrow.transform.SetParent(this.gameObject.transform);
     }
+
+
+    //private void Update()
+    //{
+    //    if (Object.HasInputAuthority)
+    //    {
+    //        RPC_UpdatePosition(this.transform.position);
+    //    }
+
+    //    Debug.Log("Enter");
+    //}
+
+    //[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    //public void RPC_UpdatePosition(Vector3 newPos)
+    //{
+    //    // Server / StateAuthority side update
+    //    transform.position = newPos;
+    //}
 }

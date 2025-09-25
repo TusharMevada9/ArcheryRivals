@@ -1,6 +1,7 @@
+using Fusion;
 using UnityEngine;
 
-public class TargetMovement : MonoBehaviour
+public class TargetMovement : NetworkBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 2f;   
@@ -43,7 +44,24 @@ public class TargetMovement : MonoBehaviour
             }
         }
     }
-    
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_UpdatePosition(Vector3 newPos)
+    {
+        // Server / StateAuthority side update
+        Debug.Log("Pos");
+        transform.position = newPos;
+    }
+
+
+    public override void FixedUpdateNetwork()
+    {
+        if (Object.HasInputAuthority)
+        {
+            RPC_UpdatePosition(this.transform.position);
+        }
+    }
+
     void ChangeRandomSpeed()
     {
         if (useRandomSpeed)

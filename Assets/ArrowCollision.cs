@@ -42,6 +42,12 @@ public class ArrowCollision : MonoBehaviour
 
         Debug.Log("Arrow hit target - will not be destroyed");
 
+		// Play arrow hit target SFX (singleplayer)
+		if (SoundManager.Instance != null)
+		{
+			SoundManager.Instance.PlayRandomArrowHitTarget();
+		}
+
 
         if (targetCollider.CompareTag("Red"))
         {
@@ -61,7 +67,7 @@ public class ArrowCollision : MonoBehaviour
         }
 
         Vector2 Pos = targetCollider.transform.position;
-        Pos.x -= 0.35f;
+        //Pos.x -= 0.35f;
         GameObject New = Instantiate(ArrowHitPrefab, targetCollider.transform.position, Quaternion.identity);
         New.transform.SetParent(this.gameObject.transform);
 

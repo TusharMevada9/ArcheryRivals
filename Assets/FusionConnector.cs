@@ -1,4 +1,5 @@
 ﻿using Fusion;
+using Fusion.Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
@@ -21,12 +22,17 @@ public class FusionConnector : MonoBehaviour, INetworkRunnerCallbacks
         instance = this;
     }
 
-    internal async void ConnectToServer(string sessionName)
+    internal async void ConnectToServer(string sessionName, string region)
     {
         if (networkRunner == null)
             networkRunner = gameObject.AddComponent<NetworkRunner>();
 
         networkRunner.ProvideInput = true;
+        var appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
+        appSettings.UseNameServer = true;
+        appSettings.AppVersion = "1.0.0";
+        appSettings.FixedRegion = region.ToLower();
+        Debug.Log($"[Fusion] Connecting to region: {region}");
 
         var result = await networkRunner.StartGame(
             new StartGameArgs()

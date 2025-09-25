@@ -154,6 +154,7 @@
             const matchId = urlParams.get("matchId");
             const playerId = urlParams.get("playerId");
             const opponentId = urlParams.get("opponentId");
+            const region = urlParams.get("region") || "in"; // Default to "in" if not provided
             const replayMode = urlParams.get("replay");
             const testMode = urlParams.get("testMode"); // New test parameter
 
@@ -161,10 +162,11 @@
             window.matchId = matchId;
             window.playerId = playerId;
             window.opponentId = opponentId;
+            window.region = region;
             window.replayMode = replayMode;
             window.testMode = testMode;
 
-            console.log("[WebGL] URL Parameters:", { matchId, playerId, opponentId, replayMode, testMode });
+            console.log("[WebGL] URL Parameters:", { matchId, playerId, opponentId, region, replayMode, testMode });
 
             // Handle test mode
             if (testMode) {
@@ -176,21 +178,24 @@
                         testParams = {
                             matchId: matchId || "test_ai",
                             playerId: playerId || "human_player",
-                            opponentId: opponentId || "b912345678"
+                            opponentId: opponentId || "b912345678",
+                            region: region || "in"
                         };
                         break;
                     case "multiplayer":
                         testParams = {
                             matchId: matchId || "test_multiplayer",
                             playerId: playerId || "human_player_1",
-                            opponentId: opponentId || "human_player_2"
+                            opponentId: opponentId || "human_player_2",
+                            region: region || "in"
                         };
                         break;
                     default:
                         testParams = {
                             matchId: matchId || "test_default",
                             playerId: playerId || "human_player",
-                            opponentId: opponentId || "b912345678"
+                            opponentId: opponentId || "b912345678",
+                            region: region || "in"
                         };
                 }
                 
@@ -208,7 +213,7 @@
                     console.log("[WebGL] Normal mode - sending parameters to Unity");
                     setTimeout(() => {
                         if (instance && instance.SendMessage) {
-                            const jsonParams = JSON.stringify({ matchId, playerId, opponentId });
+                            const jsonParams = JSON.stringify({ matchId, playerId, opponentId, region });
                             instance.SendMessage('IFrameBridge', 'InitParamsFromJS', jsonParams);
                         }
                     }, 1000);
@@ -220,7 +225,8 @@
                             const testParams = JSON.stringify({
                                 matchId: "test_default",
                                 playerId: "human_player",
-                                opponentId: "b912345678"
+                                opponentId: "b912345678",
+                                region: "in"
                             });
                             instance.SendMessage('IFrameBridge', 'InitParamsFromJS', testParams);
                         }
