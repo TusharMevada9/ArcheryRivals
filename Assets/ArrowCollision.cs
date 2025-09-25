@@ -11,16 +11,19 @@ public class ArrowCollision : MonoBehaviour
     public bool makeTargetKinematic = true;
 
     [Header("Visual Effects")]
-    public bool showHitEffect = true;     
-    public Color hitColor = Color.red;  
-    private Rigidbody2D arrowRb;           
-    private SpriteRenderer arrowSprite;    
+    public bool showHitEffect = true;
+    public Color hitColor = Color.red;
+    private Rigidbody2D arrowRb;
+    private SpriteRenderer arrowSprite;
 
     public List<GameObject> targets = new List<GameObject>();
 
     public int Count = 0;
 
     public GameObject ArrowHitPrefab;
+
+
+    public GameObject Particals;
 
     void Start()
     {
@@ -31,9 +34,12 @@ public class ArrowCollision : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag(targetTag))
+        if (UIManager.Instance.isGameStart == true)
         {
-            HandleCollision2D(other);
+            if (other.gameObject.CompareTag(targetTag))
+            {
+                HandleCollision2D(other);
+            }
         }
     }
 
@@ -42,11 +48,13 @@ public class ArrowCollision : MonoBehaviour
 
         Debug.Log("Arrow hit target - will not be destroyed");
 
-		// Play arrow hit target SFX (singleplayer)
-		if (SoundManager.Instance != null)
-		{
-			SoundManager.Instance.PlayRandomArrowHitTarget();
-		}
+        // Play arrow hit target SFX (singleplayer)
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayRandomArrowHitTarget();
+        }
+        Particals.SetActive(true);
+        Particals.GetComponent<ParticleSystem>().Play();
 
 
         if (targetCollider.CompareTag("Red"))
@@ -105,6 +113,14 @@ public class ArrowCollision : MonoBehaviour
             Count = 0;
         }
 
+        Invoke(nameof(ParticalFalse), 1f);
+    }
+
+
+    public void ParticalFalse()
+    {
+        Particals.GetComponent<ParticleSystem>().Stop();
+        Particals.SetActive(false);
     }
 
 }

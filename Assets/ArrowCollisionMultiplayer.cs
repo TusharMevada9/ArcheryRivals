@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 public class ArrowCollisionMultiplayer : NetworkBehaviour
 {
@@ -22,6 +23,8 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
 
     public NetworkObject HalfArrow;
 
+    public GameObject Particals;
+
     public int Count = 0;
     void Start()
     {
@@ -33,9 +36,12 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     {
         if (Object.HasStateAuthority)
         {
-            if (other.gameObject.CompareTag(targetTag))
+            if (UIManager.Instance.isGameStart == true)
             {
-               HandleCollision2D(other);
+                if (other.gameObject.CompareTag(targetTag))
+                {
+                    HandleCollision2D(other);
+                }
             }
         }
     }
@@ -55,7 +61,7 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
             FusionConnector.instance.NetworkRunner.Despawn(HalfArrow);
        
         }
-
+        RPCParticalTrue();
 
         if (targetCollider.CompareTag("Red"))
         {
@@ -78,13 +84,10 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
         HalfArrow = New;
         RPCTrueHalf(New);
         RPCPosHalf(Pos);
+
+        //yield return new WaitForSeconds(1f);
+       Invoke(nameof(RPCParticalFalse),1f);
     }
-
-    //public IEnumerator WaitTimeRpc()
-    //{
-
-    //}
-
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCTrueHalf(NetworkObject New)
@@ -121,6 +124,21 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
             HalfArrow.transform.localPosition = new Vector2(0.38f, HalfArrow.transform.localPosition.y);
 
         }
+    }
+
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCParticalTrue()
+    {
+        Particals.SetActive(true);
+        Particals.GetComponent<ParticleSystem>().Play();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCParticalFalse()
+    {
+        Particals.SetActive(false);
+        Particals.GetComponent<ParticleSystem>().Stop();
     }
 
 

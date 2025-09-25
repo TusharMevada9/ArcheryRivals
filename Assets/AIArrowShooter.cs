@@ -70,6 +70,8 @@ public class AIArrowShooter : MonoBehaviour
     [Header("AI Image Switching")]
     public float imageSwitchDuration = 0.5f;
 
+    public GameObject Particals;
+
     void Start()
     {
         if (shootPoint == null)
@@ -220,6 +222,9 @@ public class AIArrowShooter : MonoBehaviour
         // Always spawn from the shoot point
         Vector3 adjustedSpawn = shootPoint != null ? shootPoint.position : spawnPosition;
 
+        //Particals.SetActive(true);
+        //Particals.GetComponent<ParticleSystem>().Play();
+
         GameObject newArrow = Instantiate(arrowPrefab, adjustedSpawn, Quaternion.identity);
 
         BowClickImage.SetActive(false);
@@ -270,6 +275,9 @@ public class AIArrowShooter : MonoBehaviour
         BowClickImage.SetActive(false);
         BowNoArrowClickImage.SetActive(false);
         BowNoClickImage.SetActive(true);
+
+        //Particals.GetComponent<ParticleSystem>().Stop();
+        //Particals.SetActive(false);
 
         yield return new WaitForSeconds(spawnGateDelay);
         isFiring = false;
@@ -369,6 +377,12 @@ public class AIArrowShooter : MonoBehaviour
             return distance == 0f || distance == 1f;
         }
         return false;
+    }
+
+    public void ParticalFalse()
+    {
+        Particals.GetComponent<ParticleSystem>().Stop();
+        Particals.SetActive(false);
     }
 }
 

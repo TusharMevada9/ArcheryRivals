@@ -36,6 +36,8 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
 
     public bool isArrowGo;
 
+    
+
     void Start()
     {
         if (shootPoint == null)
@@ -135,6 +137,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         NetworkObject newArrow = FusionConnector.instance.NetworkRunner.Spawn(arrowPrefab, spawnPosition, Quaternion.identity);
         isArrowGo = true;
         RPCNoArrowTrue();
+        
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
         if (arrowRb != null)
         {
@@ -178,6 +181,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
 
         isArrowGo = false;
         RPCNoArrowfalse();
+        
 
         yield return new WaitForSeconds(2f);
 
@@ -246,19 +250,5 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         BowNoClickImage.SetActive(true);
     }
 
-    //void FixedUpdateNetwork()
-    //{
-    //    // Physics move with interpolation
-    //    if (Object.HasInputAuthority)
-    //    {
-    //        RPC_UpdatePosition(this.transform.position);
-    //    }
-    //}
-
-    //[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    //public void RPC_UpdatePosition(Vector3 newPos)
-    //{
-    //    // Server / StateAuthority side update
-    //    transform.position = newPos;
-    //}
+   
 }
