@@ -22,6 +22,7 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
 
 
     public NetworkObject HalfArrow;
+    public NetworkObject Par;
 
     public GameObject Particals;
 
@@ -59,9 +60,8 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
         if (HalfArrow != null) 
         {
             FusionConnector.instance.NetworkRunner.Despawn(HalfArrow);
-       
         }
-        RPCParticalTrue();
+        //  RPCParticalTrue();
 
         if (targetCollider.CompareTag("Red"))
         {
@@ -81,8 +81,11 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
 
         //yield return new WaitForSeconds(0.01f);
         NetworkObject New = FusionConnector.instance.NetworkRunner.Spawn(SpawnArrow);
+        NetworkObject par = FusionConnector.instance.NetworkRunner.Spawn(Particals);
         HalfArrow = New;
+        Par = par;
         RPCTrueHalf(New);
+        RPCTruePar(par);
         RPCPosHalf(Pos);
 
         //yield return new WaitForSeconds(1f);
@@ -93,6 +96,13 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     public void RPCTrueHalf(NetworkObject New)
     {
         HalfArrow = New;
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCTruePar(NetworkObject New)
+    {
+        Par = New;
+        Par.GetComponent<ParticleSystem>().Stop();
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
@@ -113,7 +123,11 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     public void RPCPosHalf(Vector2 pos)
     {
         HalfArrow.transform.localPosition = pos;
+        Par.transform.localPosition = pos;
         HalfArrow.transform.SetParent(this.gameObject.transform);
+        Par.transform.SetParent(this.gameObject.transform);
+
+        Par.GetComponent<ParticleSystem>().Play();
 
         if (targetTag == "Red")
         {
@@ -126,19 +140,10 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
         }
     }
 
-
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void RPCParticalTrue()
-    {
-        Particals.SetActive(true);
-        Particals.GetComponent<ParticleSystem>().Play();
-    }
-
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCParticalFalse()
     {
-        Particals.SetActive(false);
-        Particals.GetComponent<ParticleSystem>().Stop();
+       // FusionConnector.instance.NetworkRunner.Despawn(Par);
     }
 
 

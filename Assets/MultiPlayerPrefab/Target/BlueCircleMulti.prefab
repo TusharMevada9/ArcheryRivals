@@ -160,7 +160,8 @@ MonoBehaviour:
   hitColor: {r: 1, g: 0, b: 0, a: 1}
   SpawnArrow: {fileID: 482878909647637341, guid: 2fa728bae69d88742808e124290956e3, type: 3}
   HalfArrow: {fileID: 0}
-  Particals: {fileID: 4581180363116239367}
+  Par: {fileID: 0}
+  Particals: {fileID: 908503495002959299, guid: 98ee75159ca6b7d459ddaed86c5a1219, type: 3}
   Count: 0
 --- !u!114 &2454132828392214454
 MonoBehaviour:
@@ -240,7 +241,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.1, y: 0}
+  m_Offset: {x: 0.1, y: 0.012626126}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -250,7 +251,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.028234124, y: 0.8429347}
+  m_Size: {x: 0.028234124, y: 0.8176825}
   m_EdgeRadius: 0
 --- !u!1001 &4198226991112488379
 PrefabInstance:
@@ -270,15 +271,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.2
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.2
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.2
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalPosition.x
@@ -332,10 +333,5 @@ PrefabInstance:
 --- !u!4 &1439673744622559282 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
-  m_PrefabInstance: {fileID: 4198226991112488379}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &4581180363116239367 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 418982581615091644, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
   m_PrefabInstance: {fileID: 4198226991112488379}
   m_PrefabAsset: {fileID: 0}

@@ -22,6 +22,9 @@ public class SoundManager : MonoBehaviour
 	[SerializeField]
 	private AudioSource winSource;
 
+	[SerializeField]
+	private AudioSource bowSource;
+
 	private AudioSource activeMusicSource;
 	private float musicVolume = 1f;
 
@@ -77,6 +80,9 @@ public class SoundManager : MonoBehaviour
 		{
 			Instance = this;
 			DontDestroyOnLoad(gameObject);
+			
+			// Optimize audio settings for WebGL
+			OptimizeAudioSettings();
 
 			if (sfxSource == null)
 			{
@@ -106,6 +112,16 @@ public class SoundManager : MonoBehaviour
 				winSource.loop = false;
 				winSource.spatialBlend = 0f;
 				winSource.dopplerLevel = 0f;
+			}
+
+			if (bowSource == null)
+			{
+				bowSource = gameObject.AddComponent<AudioSource>();
+				bowSource.playOnAwake = false;
+				bowSource.loop = false;
+				bowSource.spatialBlend = 0f;
+				bowSource.dopplerLevel = 0f;
+				bowSource.volume = 0.25f; // Set volume to 0.5 for bow sounds
 			}
 
 			activeMusicSource = musicSourceA;
@@ -222,7 +238,7 @@ public class SoundManager : MonoBehaviour
 		{
 			return;
 		}
-		sfxSource.PlayOneShot(clip, 0.5f);
+		bowSource.PlayOneShot(clip);
 	}
 
 	public void PlayRandomBowRelease()
@@ -237,7 +253,7 @@ public class SoundManager : MonoBehaviour
 		{
 			return;
 		}
-		sfxSource.PlayOneShot(clip, 0.5f);
+		sfxSource.PlayOneShot(clip);
 	}
 
 	
@@ -289,6 +305,18 @@ public class SoundManager : MonoBehaviour
 		{
 			countdownSource.PlayOneShot(count1Clip);
 		}
+	}
+
+	// Optimize audio settings for WebGL
+	private void OptimizeAudioSettings()
+	{
+		// Set audio configuration for WebGL
+		AudioConfiguration config = AudioSettings.GetConfiguration();
+		config.dspBufferSize = 256; // Smaller buffer size for lower latency
+		config.sampleRate = 44100; // Standard sample rate
+		AudioSettings.Reset(config);
+		
+		Debug.Log("[SoundManager] Audio settings optimized for WebGL");
 	}
 
 }

@@ -98,6 +98,7 @@ GameObject:
   - component: {fileID: 4830648394839326414}
   - component: {fileID: 977268395477786581}
   - component: {fileID: 497118404718085010}
+  - component: {fileID: 3210369429235492234}
   m_Layer: 0
   m_Name: BowBlue
   m_TagString: Untagged
@@ -139,10 +140,10 @@ MonoBehaviour:
   moveSpeed: 2
   moveRange: 3
   moveUpDown: 1
-  useRandomSpeed: 0
+  useRandomSpeed: 1
   minSpeed: 1
   maxSpeed: 2
-  speedChangeInterval: 3
+  speedChangeInterval: 1
 --- !u!114 &497118404718085010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,6 +179,35 @@ MonoBehaviour:
   belowApproachOffsetHard: 0.03
   belowEpsilonEasy: 0.15
   belowEpsilonHard: 0.02
+  usePredictiveAiming: 1
+  predictionTime: 0.1
+  useMicroAdjustments: 1
+  microAdjustmentStrength: 0.5
+  useAccuracyCurve: 1
+  accuracyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: -0.05
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 10
+      value: 0.5
+      inSlope: -0.05
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   nearCheckInterval: 0.2
   nearWindowMultiplier: 2
   hardLooseWindow: 1.2
@@ -194,6 +224,28 @@ MonoBehaviour:
   BowNoArrowClickImage: {fileID: 7021139849367336408}
   imageSwitchDuration: 0.5
   Particals: {fileID: 0}
+--- !u!95 &3210369429235492234
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1806987646781294848}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 0c807da519547b645845c94108c88137, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &2509081874260106123
 GameObject:
   m_ObjectHideFlags: 0
@@ -394,7 +446,7 @@ Transform:
   m_GameObject: {fileID: 8412572882857256533}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0.16, y: 0, z: -0.54999924}
+  m_LocalPosition: {x: -0.37, y: 0, z: -0.54999924}
   m_LocalScale: {x: 1.5674055, y: 1.5674055, z: 1.5674055}
   m_ConstrainProportionsScale: 0
   m_Children: []

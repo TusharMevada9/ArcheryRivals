@@ -28,20 +28,28 @@ public class AIArrowShooter : MonoBehaviour
 
     [Header("AI Accuracy Settings")]
     [SerializeField, Range(0f, 1f)] private float easyHitAccuracy = 0.65f; // Probability to align for a hit
-    [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.93f; // Higher probability on hard
+    [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.98f; // Higher probability on hard
     [SerializeField] private float easyYAlignTolerance = 1.0f; // Acceptable Y diff window to shoot
-    [SerializeField] private float hardYAlignTolerance = 0.5f; // Wider so hard shoots more often
-    [SerializeField] private float hardShootForceBonus = 1.15f; // Slightly faster arrows on hard
+    [SerializeField] private float hardYAlignTolerance = 0.3f; // Tighter tolerance for better accuracy
+    [SerializeField] private float hardShootForceBonus = 1.2f; // Faster arrows on hard for better precision
     [SerializeField] private bool requireBelowTarget = true; // Only shoot if bow is at/below target height
     [SerializeField] private float belowApproachOffsetEasy = 0.08f; // Spawn slightly below target so arrow comes up into it
-    [SerializeField] private float belowApproachOffsetHard = 0.03f;
+    [SerializeField] private float belowApproachOffsetHard = 0.02f; // More precise positioning
     [SerializeField] private float belowEpsilonEasy = 0.15f; // Allow slight tolerance above target
-    [SerializeField] private float belowEpsilonHard = 0.02f;
+    [SerializeField] private float belowEpsilonHard = 0.01f; // Very tight tolerance for hard mode
+    
+    [Header("Advanced Accuracy Features")]
+    [SerializeField] private bool usePredictiveAiming = true; // Predict target movement
+    [SerializeField] private float predictionTime = 0.1f; // How far ahead to predict
+    [SerializeField] private bool useMicroAdjustments = true; // Fine-tune aim based on target velocity
+    [SerializeField] private float microAdjustmentStrength = 0.5f; // How much to adjust
+    [SerializeField] private bool useAccuracyCurve = true; // Use accuracy curve based on distance
+    [SerializeField] private AnimationCurve accuracyCurve = AnimationCurve.Linear(0f, 1f, 10f, 0.5f);
 
     [Header("AI Timing")]
     [SerializeField] private float nearCheckInterval = 0.2f;
     [SerializeField] private float nearWindowMultiplier = 2f;
-    [SerializeField] private float hardLooseWindow = 1.2f;
+    [SerializeField] private float hardLooseWindow = 0.8f;
     [SerializeField] private float hardQuickRetry = 0.08f;
     [SerializeField] private bool fireImmediatelyOnAlign = true;
     [SerializeField] private float hardImmediateCooldown = 0.5f;
@@ -60,6 +68,11 @@ public class AIArrowShooter : MonoBehaviour
     private float lastTargetY = float.NaN;
     private bool isFiring = false;
     private float lastShotTime = -999f;
+    
+    // Predictive aiming variables
+    private Vector3 targetVelocity = Vector3.zero;
+    private Vector3 lastTargetPosition = Vector3.zero;
+    private float targetVelocityUpdateTime = 0f;
 
     public bool isGameStart = false;
 
@@ -110,11 +123,17 @@ public class AIArrowShooter : MonoBehaviour
 
             if (Bow != null && Target != null)
             {
+                // Update target velocity for predictive aiming
+                UpdateTargetVelocity();
+                
                 float yDiff = Bow.position.y - Target.position.y;
                 currentDistance = Mathf.Abs(yDiff);
 
-                // Difficulty-based alignment window
-                float alignTolerance = GetAlignTolerance();
+                // Apply accuracy curve based on distance
+                float accuracyMultiplier = useAccuracyCurve ? accuracyCurve.Evaluate(currentDistance) : 1f;
+                
+                // Difficulty-based alignment window with accuracy multiplier
+                float alignTolerance = GetAlignTolerance() * accuracyMultiplier;
                 bool isAligned = currentDistance <= alignTolerance;
                 bool hardCanForce = currentAIDifficulty == AIMode.Hard && currentDistance <= hardLooseWindow;
 
@@ -124,22 +143,31 @@ public class AIArrowShooter : MonoBehaviour
                 bool approaching = (bowDelta < 0f && targetDelta > 0f) || (bowDelta > 0f && targetDelta < 0f);
                 // Also allow shot when integer Y band matches (first digit same)
                 bool sameYBand = Mathf.FloorToInt(Bow.position.y) == Mathf.FloorToInt(Target.position.y);
+                
+                // Enhanced alignment check with predictive aiming
+                bool predictiveAligned = false;
+                if (usePredictiveAiming && currentAIDifficulty == AIMode.Hard)
+                {
+                    Vector3 predictedTargetPos = Target.position + (targetVelocity * predictionTime);
+                    float predictedYDiff = Bow.position.y - predictedTargetPos.y;
+                    predictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 0.8f; // Even tighter for prediction
+                }
 
                 if (currentAIDifficulty == AIMode.Hard)
                 {
-                    // For Hard: fire when approaching and within ~1 unit OR when in same integer Y band
-                    canShoot = (approaching && currentDistance <= 1f) || sameYBand;
+                    // For Hard: fire when approaching and within ~1 unit OR when in same integer Y band OR predictive alignment
+                    canShoot = (approaching && currentDistance <= 1f) || sameYBand || predictiveAligned;
                 }
                 else if (requireBelowTarget)
                 {
                     // Shoot only when bow is level with or below target (arrow meets target from below)
                     float eps = currentAIDifficulty == AIMode.Hard ? belowEpsilonHard : belowEpsilonEasy;
                     bool bowBelowOrEqual = Bow.position.y <= Target.position.y + eps;
-                    canShoot = (isAligned || hardCanForce) && bowBelowOrEqual;
+                    canShoot = (isAligned || hardCanForce || predictiveAligned) && bowBelowOrEqual;
                 }
                 else
                 {
-                    canShoot = isAligned || hardCanForce;
+                    canShoot = isAligned || hardCanForce || predictiveAligned;
                 }
 
                 // Update last positions after logic
@@ -219,8 +247,10 @@ public class AIArrowShooter : MonoBehaviour
         }
         yield return new WaitForSeconds(aiHoldDuration);
 
-        // Always spawn from the shoot point
+        // Always spawn from the shoot point with micro-adjustments
         Vector3 adjustedSpawn = shootPoint != null ? shootPoint.position : spawnPosition;
+        Vector3 microAdjustment = CalculateMicroAdjustment();
+        adjustedSpawn += microAdjustment;
 
         //Particals.SetActive(true);
         //Particals.GetComponent<ParticleSystem>().Play();
@@ -383,6 +413,40 @@ public class AIArrowShooter : MonoBehaviour
     {
         Particals.GetComponent<ParticleSystem>().Stop();
         Particals.SetActive(false);
+    }
+    
+    // Update target velocity for predictive aiming
+    private void UpdateTargetVelocity()
+    {
+        if (Time.time - targetVelocityUpdateTime > 0.1f) // Update every 0.1 seconds
+        {
+            if (lastTargetPosition != Vector3.zero)
+            {
+                targetVelocity = (Target.position - lastTargetPosition) / (Time.time - targetVelocityUpdateTime);
+            }
+            lastTargetPosition = Target.position;
+            targetVelocityUpdateTime = Time.time;
+        }
+    }
+    
+    // Calculate micro-adjustment for better accuracy
+    private Vector3 CalculateMicroAdjustment()
+    {
+        if (!useMicroAdjustments || currentAIDifficulty != AIMode.Hard)
+            return Vector3.zero;
+            
+        // Calculate small adjustment based on target velocity and current alignment
+        Vector3 adjustment = Vector3.zero;
+        if (targetVelocity.magnitude > 0.1f) // Only adjust if target is moving
+        {
+            float yDiff = Bow.position.y - Target.position.y;
+            if (Mathf.Abs(yDiff) > 0.1f) // Only adjust if not perfectly aligned
+            {
+                // Micro-adjustment to compensate for target movement
+                adjustment.y = -targetVelocity.y * microAdjustmentStrength * 0.1f;
+            }
+        }
+        return adjustment;
     }
 }
 

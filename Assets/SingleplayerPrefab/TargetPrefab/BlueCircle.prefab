@@ -109,8 +109,8 @@ MonoBehaviour:
   moveUpDown: 1
   useRandomSpeed: 1
   minSpeed: 1
-  maxSpeed: 1.5
-  speedChangeInterval: 3
+  maxSpeed: 2
+  speedChangeInterval: 5
 --- !u!114 &7412634568363355740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,7 +132,7 @@ MonoBehaviour:
   targets: []
   Count: 0
   ArrowHitPrefab: {fileID: 4601631196306146201, guid: 3dc4b42432824954f987f160c4d64ebf, type: 3}
-  Particals: {fileID: 6215061972032111031}
+  Particals: {fileID: 908503495002959299, guid: 17e835137cd6c3f428ffb5f9d6cec807, type: 3}
 --- !u!61 &1536215361924732818
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -213,7 +213,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.095001906, y: 0.013954297}
+  m_Offset: {x: 0.031139154, y: 0.013954282}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -223,7 +223,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.023630083, y: 0.8551389}
+  m_Size: {x: 0.15138265, y: 0.8551389}
   m_EdgeRadius: 0
 --- !u!1001 &6021545383329340939
 PrefabInstance:
@@ -243,15 +243,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.20302758
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.20302758
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.20302758
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalPosition.x
@@ -302,11 +302,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
---- !u!1 &6215061972032111031 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 418982581615091644, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
-  m_PrefabInstance: {fileID: 6021545383329340939}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8802695655889156994 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}

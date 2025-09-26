@@ -398,12 +398,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  moveRange: 4
+  moveRange: 3
   moveUpDown: 1
   useRandomSpeed: 0
   minSpeed: 1
-  maxSpeed: 4
-  speedChangeInterval: 2
+  maxSpeed: 2
+  speedChangeInterval: 3
 --- !u!114 &985737782866720539
 MonoBehaviour:
   m_ObjectHideFlags: 0

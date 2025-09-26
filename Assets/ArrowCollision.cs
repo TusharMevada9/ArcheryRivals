@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -38,12 +39,12 @@ public class ArrowCollision : MonoBehaviour
         {
             if (other.gameObject.CompareTag(targetTag))
             {
-                HandleCollision2D(other);
+                StartCoroutine(HandleCollision2D(other));
             }
         }
     }
 
-    void HandleCollision2D(Collider2D targetCollider)
+    IEnumerator HandleCollision2D(Collider2D targetCollider)
     {
 
         Debug.Log("Arrow hit target - will not be destroyed");
@@ -53,8 +54,9 @@ public class ArrowCollision : MonoBehaviour
         {
             SoundManager.Instance.PlayRandomArrowHitTarget();
         }
-        Particals.SetActive(true);
-        Particals.GetComponent<ParticleSystem>().Play();
+
+        //Particals.SetActive(true);
+        //Particals.GetComponent<ParticleSystem>().Play();
 
 
         if (targetCollider.CompareTag("Red"))
@@ -77,6 +79,9 @@ public class ArrowCollision : MonoBehaviour
         Vector2 Pos = targetCollider.transform.position;
         //Pos.x -= 0.35f;
         GameObject New = Instantiate(ArrowHitPrefab, targetCollider.transform.position, Quaternion.identity);
+        GameObject Par = Instantiate(Particals, targetCollider.transform.position, Quaternion.identity);
+        Par.GetComponent<ParticleSystem>().Stop();
+        Par.transform.SetParent(this.gameObject.transform);
         New.transform.SetParent(this.gameObject.transform);
         if (targetCollider.CompareTag("Red"))
         {
@@ -87,6 +92,7 @@ public class ArrowCollision : MonoBehaviour
             New.transform.localPosition = new Vector2(0.38f, New.transform.localPosition.y);
 
         }
+        Par.GetComponent<ParticleSystem>().Play();
 
         Destroy(targetCollider.gameObject);
 
@@ -113,7 +119,12 @@ public class ArrowCollision : MonoBehaviour
             Count = 0;
         }
 
-        Invoke(nameof(ParticalFalse), 1f);
+        yield return new WaitForSeconds(1f);
+
+
+        Destroy(Par);
+
+        //  Invoke(nameof(ParticalFalse), 1f);
     }
 
 

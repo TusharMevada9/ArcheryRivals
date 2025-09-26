@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 2
-  moveRange: 5
+  moveRange: 3
   moveUpDown: 1
   useRandomSpeed: 1
   minSpeed: 1
@@ -132,7 +132,7 @@ MonoBehaviour:
   targets: []
   Count: 0
   ArrowHitPrefab: {fileID: 4601631196306146201, guid: f3c5e765336c6664c83052c161daea75, type: 3}
-  Particals: {fileID: 8367634136449851801}
+  Particals: {fileID: 908503495002959299, guid: 17e835137cd6c3f428ffb5f9d6cec807, type: 3}
 --- !u!61 &3311509843203373256
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -213,7 +213,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.080630705, y: 0.012123108}
+  m_Offset: {x: -0.080630705, y: 0.011593476}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -223,7 +223,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.021866083, y: 0.88659847}
+  m_Size: {x: 0.021866083, y: 0.8054334}
   m_EdgeRadius: 0
 --- !u!1001 &8200853272487591461
 PrefabInstance:
@@ -243,15 +243,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.20302758
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.20302758
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.20302758
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
       propertyPath: m_LocalPosition.x
@@ -305,10 +305,5 @@ PrefabInstance:
 --- !u!4 &6374544048880901036 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3006617364039509385, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
-  m_PrefabInstance: {fileID: 8200853272487591461}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &8367634136449851801 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 418982581615091644, guid: e988509f9e9ef7b4fad7884ac9ec80ea, type: 3}
   m_PrefabInstance: {fileID: 8200853272487591461}
   m_PrefabAsset: {fileID: 0}

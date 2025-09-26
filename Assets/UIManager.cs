@@ -8,6 +8,9 @@ using Unity.VisualScripting;
 public class UIManager : MonoBehaviour
 {
     [Header("Score Text Elements")]
+
+    public GameObject HoldTextObj;
+
     public TextMeshProUGUI redScoreText;
     public TextMeshProUGUI blueScoreText;
 
@@ -377,7 +380,9 @@ public class UIManager : MonoBehaviour
     IEnumerator CountDownSequence()
     {
         // Show countdown panel
-        CountDownPanel.SetActive(true);
+        CountDownPanel.SetActive(true); 
+        HoldTextObj.SetActive(true);
+        
 
         // Hide all countdown images initially
         if (Image_CountDown1 != null) Image_CountDown1.SetActive(false);
@@ -422,6 +427,7 @@ public class UIManager : MonoBehaviour
 
         // Hide countdown panel
         CountDownPanel.SetActive(false);
+        HoldTextObj.SetActive(false);
 
         if (isMultiplayerMode)
         {

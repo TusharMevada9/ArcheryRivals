@@ -45,14 +45,14 @@ public class IFrameBridge : MonoBehaviour
 	[DllImport("__Internal")]
 	private static extern void SendMatchAbort(string message, string error, string errorCode);
 
-	[DllImport("__Internal")]
-	private static extern void SendGameState(string state);
+	// [DllImport("__Internal")]
+	// private static extern void SendGameState(string state);
 
-	[DllImport("__Internal")]
-	private static extern void SendBuildVersion(string version);
+	// [DllImport("__Internal")]
+	// private static extern void SendBuildVersion(string version);
 
-	[DllImport("__Internal")]
-	private static extern void SendGameReady();
+	// [DllImport("__Internal")]
+	// private static extern void SendGameReady();
 
 	[DllImport("__Internal")]
 	private static extern int IsMobileWeb();
@@ -60,10 +60,10 @@ public class IFrameBridge : MonoBehaviour
 	// Fallback methods for non-WebGL builds
 	private static string GetURLParameters() { return "{}"; }
 	private static void SendMatchResult(string matchId, string playerId, string opponentId, string outcome, int score, int opponentScore, int averagePing, string region) { }
-	private static void SendMatchAbort(string message, string error, string errorCode) { }
-	private static void SendGameState(string state) { }
-	private static void SendBuildVersion(string version) { }
-	private static void SendGameReady() { }
+	 private static void SendMatchAbort(string message, string error, string errorCode) { }
+	// private static void SendGameState(string state) { }
+	// private static void SendBuildVersion(string version) { }
+	// private static void SendGameReady() { }
 	private static int IsMobileWeb() { return 0; }
 #endif
 
@@ -102,8 +102,8 @@ public class IFrameBridge : MonoBehaviour
 			// 2. Get match parameters from URL 
 			// 3. Initialize appropriate mode
 			Debug.Log("[IFrameBridge] Sending game ready signal...");
-			SendGameReady();
-			SendBuildVersion(Application.version);
+			//SendGameReady();
+			//SendBuildVersion(Application.version);
 			Debug.Log("[IFrameBridge] Game ready signal sent successfully");
 
 			ExtractParametersFromURL();
@@ -127,40 +127,40 @@ public class IFrameBridge : MonoBehaviour
 
     private void ExtractParametersFromURL()
     {
-        //try
-        //{
-#if UNITY_WEBGL && !UNITY_EDITOR
-        // Get parameters from URL in WebGL build
-        string json = GetURLParameters();
-        if (string.IsNullOrEmpty(json))
+        try
         {
-            Debug.LogWarning("[IFrameBridge] No URL parameters found in WebGL build, using fallback AI mode");
-            // Fallback to AI mode if no URL parameters (no local region default)
-            string fallbackJson = "{\"matchId\":\"webgl_fallback\",\"playerId\":\"webgl_player\",\"opponentId\":\"b912345678\"}";
-            InitParamsFromJS(fallbackJson);
-            return;
-        }
+#if UNITY_WEBGL && !UNITY_EDITOR
+            // Get parameters from URL in WebGL build
+            string json = GetURLParameters();
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogWarning("[IFrameBridge] No URL parameters found in WebGL build, using fallback AI mode");
+                // Fallback to AI mode if no URL parameters (no local region default)
+                string fallbackJson = "{\"matchId\":\"webgl_fallback\",\"playerId\":\"webgl_player\",\"opponentId\":\"b912345678\"}";
+                InitParamsFromJS(fallbackJson);
+                return;
+            }
 #else
         // Use test data in editor/non-WebGL builds - CHOOSE MODE HERE:
         // FOR AI MODE TESTING (uncomment this line):
-        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"b912345678\"}";
+         string json = "{\"matchId\":\"test_match\",\"playerId\":\"human_player\",\"opponentId\":\"b912345678\"}";
 
         //FOR MULTIPLAYER MODE TESTING (comment out the line above and uncomment this line):
-        string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
+        //string json = "{\"matchId\":\"test_match\",\"playerId\":\"player1\",\"opponentId\":\"player2\"}";
 
         Debug.Log("Enter");
 
         InitParamsFromJS(json);
 #endif
-        //}
-        //catch (Exception e)
-        //{
-        //	Debug.LogError("[IFrameBridge] Error extracting URL parameters: " + e.Message);
-        //	// Fallback to AI mode on error
-        //	Debug.Log("[IFrameBridge] Using fallback AI mode due to error");
-        //	string fallbackJson = "{\"matchId\":\"error_fallback\",\"playerId\":\"fallback_player\",\"opponentId\":\"b912345678\"}";
-        //	InitParamsFromJS(fallbackJson);
-        //}
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("[IFrameBridge] Error extracting URL parameters: " + e.Message);
+            // Fallback to AI mode on error
+            Debug.Log("[IFrameBridge] Using fallback AI mode due to error");
+            string fallbackJson = "{\"matchId\":\"error_fallback\",\"playerId\":\"fallback_player\",\"opponentId\":\"b912345678\"}";
+            InitParamsFromJS(fallbackJson);
+        }
     }
 
     public bool IsMobileWebGL()
@@ -369,7 +369,7 @@ public class IFrameBridge : MonoBehaviour
         Debug.Log("[IFrameBridge] Game State: " + state);
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-		SendGameState(state);
+		//SendGameState(state);
 #else
         Debug.Log($"[IFrameBridge] Game State (non-WebGL): {state}");
 #endif
@@ -605,6 +605,7 @@ public enum GameType
     Singleplayer,
     Multiplayer,
 }
+
 
 
 
