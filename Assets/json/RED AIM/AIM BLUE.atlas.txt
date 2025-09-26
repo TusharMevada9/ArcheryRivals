@@ -1,0 +1,6 @@
+AIM BLUE.png
+	size: 103, 193
+	filter: Linear, Linear
+	pma: true
+Layer 1
+	bounds: 2, 2, 99, 189

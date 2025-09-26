@@ -20,7 +20,8 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     public bool resetVelocityOnSpawn = true; // spawn પર velocity reset કરવી છે કે નહીં
     public bool useDirectVelocity = true; // velocity directly set કરવી છે કે force લગાવવું છે
 
-    public GameObject BowClickImage;
+    public SpriteRenderer BowClickImage;
+    public Sprite Check;
     public GameObject BowNoClickImage;
     public GameObject BowNoArrowClickImage;
 
@@ -36,7 +37,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
 
     public bool isArrowGo;
 
-    
+    public Animator animator;
 
     void Start()
     {
@@ -64,7 +65,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
                         holdTimer = 0f;
                         canReleaseToShoot = false;
                         Debug.Log("[Multiplayer] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
-
+                        RPCFalse();
                         // Play bow pull sound when hold starts (local only)
                         if (SoundManager.Instance != null)
                         {
@@ -77,7 +78,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
                     if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
                     {
                         canReleaseToShoot = true;
-                        RPCFalse();
+                        
                         Debug.Log("[Multiplayer] ✅ Hold time completed! Ready to shoot on release!");
                     }
                 }
@@ -209,35 +210,23 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCTrue()
     {
-        if (BowClickImage != null)
-        {
-            BowClickImage.SetActive(false);
-        }
-        if (BowNoClickImage != null)
-        {
-            BowNoClickImage.SetActive(true);
-        }
+        animator.SetBool("isClick", false);
+        BowNoArrowClickImage.SetActive(false);
+        BowNoClickImage.SetActive(true);
     }
 
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCFalse()
     {
-        if (BowClickImage != null)
-        {
-            BowClickImage.SetActive(true);
-        }
-        if (BowNoClickImage != null)
-        {
-            BowNoClickImage.SetActive(false);
-        }
+        animator.SetBool("isClick", true);
     }
 
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCNoArrowTrue()
     {
-        BowClickImage.SetActive(false);
+        BowClickImage.sprite = Check;
         BowNoClickImage.SetActive(false);
         BowNoArrowClickImage.SetActive(true);
     }
@@ -245,7 +234,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPCNoArrowfalse()
     {
-        BowClickImage.SetActive(false);
+        animator.SetBool("isClick", false);
         BowNoArrowClickImage.SetActive(false);
         BowNoClickImage.SetActive(true);
     }

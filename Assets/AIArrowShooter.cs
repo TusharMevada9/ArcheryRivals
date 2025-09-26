@@ -27,30 +27,30 @@ public class AIArrowShooter : MonoBehaviour
     public AIMode currentAIDifficulty = AIMode.Easy;
 
     [Header("AI Accuracy Settings")]
-    [SerializeField, Range(0f, 1f)] private float easyHitAccuracy = 0.65f; // Probability to align for a hit
-    [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.98f; // Higher probability on hard
-    [SerializeField] private float easyYAlignTolerance = 1.0f; // Acceptable Y diff window to shoot
-    [SerializeField] private float hardYAlignTolerance = 0.3f; // Tighter tolerance for better accuracy
+    [SerializeField, Range(0f, 1f)] private float easyHitAccuracy = 0.85f; // Increased probability to align for a hit
+    [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.99f; // Higher probability on hard
+    [SerializeField] private float easyYAlignTolerance = 0.6f; // Tighter Y diff window to shoot
+    [SerializeField] private float hardYAlignTolerance = 0.15f; // Much tighter tolerance for better accuracy
     [SerializeField] private float hardShootForceBonus = 1.2f; // Faster arrows on hard for better precision
     [SerializeField] private bool requireBelowTarget = true; // Only shoot if bow is at/below target height
-    [SerializeField] private float belowApproachOffsetEasy = 0.08f; // Spawn slightly below target so arrow comes up into it
-    [SerializeField] private float belowApproachOffsetHard = 0.02f; // More precise positioning
-    [SerializeField] private float belowEpsilonEasy = 0.15f; // Allow slight tolerance above target
-    [SerializeField] private float belowEpsilonHard = 0.01f; // Very tight tolerance for hard mode
+    [SerializeField] private float belowApproachOffsetEasy = 0.05f; // More precise spawn positioning
+    [SerializeField] private float belowApproachOffsetHard = 0.01f; // Very precise positioning
+    [SerializeField] private float belowEpsilonEasy = 0.08f; // Tighter tolerance above target
+    [SerializeField] private float belowEpsilonHard = 0.005f; // Extremely tight tolerance for hard mode
     
     [Header("Advanced Accuracy Features")]
     [SerializeField] private bool usePredictiveAiming = true; // Predict target movement
-    [SerializeField] private float predictionTime = 0.1f; // How far ahead to predict
+    [SerializeField] private float predictionTime = 0.15f; // Increased prediction time for better accuracy
     [SerializeField] private bool useMicroAdjustments = true; // Fine-tune aim based on target velocity
-    [SerializeField] private float microAdjustmentStrength = 0.5f; // How much to adjust
+    [SerializeField] private float microAdjustmentStrength = 0.8f; // Increased adjustment strength
     [SerializeField] private bool useAccuracyCurve = true; // Use accuracy curve based on distance
-    [SerializeField] private AnimationCurve accuracyCurve = AnimationCurve.Linear(0f, 1f, 10f, 0.5f);
+    [SerializeField] private AnimationCurve accuracyCurve = AnimationCurve.Linear(0f, 1f, 10f, 0.8f); // Improved accuracy curve
 
     [Header("AI Timing")]
     [SerializeField] private float nearCheckInterval = 0.2f;
     [SerializeField] private float nearWindowMultiplier = 2f;
-    [SerializeField] private float hardLooseWindow = 0.8f;
-    [SerializeField] private float hardQuickRetry = 0.08f;
+    [SerializeField] private float hardLooseWindow = 0.5f; // Tighter loose window for hard mode
+    [SerializeField] private float hardQuickRetry = 0.05f; // Faster retry for hard mode
     [SerializeField] private bool fireImmediatelyOnAlign = true;
     [SerializeField] private float hardImmediateCooldown = 0.5f;
     [SerializeField] private float easyImmediateCooldown = 0.5f;
@@ -76,7 +76,8 @@ public class AIArrowShooter : MonoBehaviour
 
     public bool isGameStart = false;
 
-    public GameObject BowClickImage;
+    public SpriteRenderer BowClickImage;
+    public Sprite Check;
     public GameObject BowNoClickImage;
     public GameObject BowNoArrowClickImage;
 
@@ -84,6 +85,9 @@ public class AIArrowShooter : MonoBehaviour
     public float imageSwitchDuration = 0.5f;
 
     public GameObject Particals;
+
+
+    public Animator animator;
 
     void Start()
     {
@@ -150,7 +154,16 @@ public class AIArrowShooter : MonoBehaviour
                 {
                     Vector3 predictedTargetPos = Target.position + (targetVelocity * predictionTime);
                     float predictedYDiff = Bow.position.y - predictedTargetPos.y;
-                    predictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 0.8f; // Even tighter for prediction
+                    predictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 0.6f; // Even tighter for prediction
+                }
+                
+                // Also enable predictive aiming for Easy mode with reduced effectiveness
+                bool easyPredictiveAligned = false;
+                if (usePredictiveAiming && currentAIDifficulty == AIMode.Easy)
+                {
+                    Vector3 predictedTargetPos = Target.position + (targetVelocity * predictionTime * 0.5f);
+                    float predictedYDiff = Bow.position.y - predictedTargetPos.y;
+                    easyPredictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 0.9f;
                 }
 
                 if (currentAIDifficulty == AIMode.Hard)
@@ -163,11 +176,11 @@ public class AIArrowShooter : MonoBehaviour
                     // Shoot only when bow is level with or below target (arrow meets target from below)
                     float eps = currentAIDifficulty == AIMode.Hard ? belowEpsilonHard : belowEpsilonEasy;
                     bool bowBelowOrEqual = Bow.position.y <= Target.position.y + eps;
-                    canShoot = (isAligned || hardCanForce || predictiveAligned) && bowBelowOrEqual;
+                    canShoot = (isAligned || hardCanForce || predictiveAligned || easyPredictiveAligned) && bowBelowOrEqual;
                 }
                 else
                 {
-                    canShoot = isAligned || hardCanForce || predictiveAligned;
+                    canShoot = isAligned || hardCanForce || predictiveAligned || easyPredictiveAligned;
                 }
 
                 // Update last positions after logic
@@ -226,13 +239,14 @@ public class AIArrowShooter : MonoBehaviour
     {
         if (isFiring)
             yield break;
-        // Enforce hard-mode global shot gap regardless of hit
         if (currentAIDifficulty == AIMode.Hard && Time.time < lastShotTime + minGapBetweenShotsHard)
             yield break;
         isFiring = true;
 
-        BowClickImage.SetActive(true);
-        BowNoClickImage.SetActive(false);
+        // BowClickImage.SetActive(true);
+        // BowNoClickImage.SetActive(false);
+
+        animator.SetBool("isClick", true);
 
         if (arrowPrefab == null)
         {
@@ -240,27 +254,28 @@ public class AIArrowShooter : MonoBehaviour
             yield break;
         }
 
-        // Simulate hold/pull before release (mirror multiplayer auto-hold)
         if (SoundManager.Instance != null)
         {
             SoundManager.Instance.PlayRandomBowPull();
         }
         yield return new WaitForSeconds(aiHoldDuration);
 
-        // Always spawn from the shoot point with micro-adjustments
         Vector3 adjustedSpawn = shootPoint != null ? shootPoint.position : spawnPosition;
         Vector3 microAdjustment = CalculateMicroAdjustment();
         adjustedSpawn += microAdjustment;
 
-        //Particals.SetActive(true);
-        //Particals.GetComponent<ParticleSystem>().Play();
 
         GameObject newArrow = Instantiate(arrowPrefab, adjustedSpawn, Quaternion.identity);
 
-        BowClickImage.SetActive(false);
+        //animator.SetBool("isGo", true);
+
+        //BowClickImage.SetActive(false);
+
+        BowClickImage.sprite = Check;
         BowNoClickImage.SetActive(false);
         BowNoArrowClickImage.SetActive(true);
-        // Play release on shot
+
+
         if (SoundManager.Instance != null)
         {
             SoundManager.Instance.PlayRandomBowRelease();
@@ -302,12 +317,9 @@ public class AIArrowShooter : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
-        BowClickImage.SetActive(false);
+        animator.SetBool("isClick", false);
         BowNoArrowClickImage.SetActive(false);
         BowNoClickImage.SetActive(true);
-
-        //Particals.GetComponent<ParticleSystem>().Stop();
-        //Particals.SetActive(false);
 
         yield return new WaitForSeconds(spawnGateDelay);
         isFiring = false;
@@ -318,11 +330,9 @@ public class AIArrowShooter : MonoBehaviour
         {
             Destroy(newArrow);
         }
-        // cooldown is applied by hit notification only
 
     }
 
-    // External call when AI arrow actually hits the opponent target/wall
     public void NotifyAIArrowHit()
     {
         if (!isOnCooldown)
@@ -415,7 +425,6 @@ public class AIArrowShooter : MonoBehaviour
         Particals.SetActive(false);
     }
     
-    // Update target velocity for predictive aiming
     private void UpdateTargetVelocity()
     {
         if (Time.time - targetVelocityUpdateTime > 0.1f) // Update every 0.1 seconds
@@ -429,21 +438,19 @@ public class AIArrowShooter : MonoBehaviour
         }
     }
     
-    // Calculate micro-adjustment for better accuracy
     private Vector3 CalculateMicroAdjustment()
     {
-        if (!useMicroAdjustments || currentAIDifficulty != AIMode.Hard)
+        if (!useMicroAdjustments)
             return Vector3.zero;
             
-        // Calculate small adjustment based on target velocity and current alignment
         Vector3 adjustment = Vector3.zero;
-        if (targetVelocity.magnitude > 0.1f) // Only adjust if target is moving
+        if (targetVelocity.magnitude > 0.05f) // Lower threshold for more responsive adjustments
         {
             float yDiff = Bow.position.y - Target.position.y;
-            if (Mathf.Abs(yDiff) > 0.1f) // Only adjust if not perfectly aligned
+            if (Mathf.Abs(yDiff) > 0.05f) // Lower threshold for more adjustments
             {
-                // Micro-adjustment to compensate for target movement
-                adjustment.y = -targetVelocity.y * microAdjustmentStrength * 0.1f;
+                float adjustmentStrength = currentAIDifficulty == AIMode.Hard ? microAdjustmentStrength : microAdjustmentStrength * 0.6f;
+                adjustment.y = -targetVelocity.y * adjustmentStrength * 0.15f; // Increased adjustment factor
             }
         }
         return adjustment;

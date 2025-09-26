@@ -1,5 +1,7 @@
+using Spine;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ArrowShooter : MonoBehaviour
 {
@@ -18,7 +20,8 @@ public class ArrowShooter : MonoBehaviour
     public bool resetVelocityOnSpawn = true; // spawn પર velocity reset કરવી છે કે નહીં
     public bool useDirectVelocity = true; // velocity directly set કરવી છે કે force લગાવવું છે
 
-    public GameObject BowClickImage;
+    public SpriteRenderer BowClickImage;
+    public Sprite Check;
     public GameObject BowNoClickImage;
     public GameObject BowNoArrowClickImage;
 
@@ -32,8 +35,9 @@ public class ArrowShooter : MonoBehaviour
     private bool isHoldingSpace = false; // Flag to track if space is being held
     private bool canReleaseToShoot = false; // Flag to check if can shoot on release
 
-
     public bool isArrowGo;
+
+    public Animator animator;
 
     void Start()
     {
@@ -64,6 +68,9 @@ public class ArrowShooter : MonoBehaviour
                     {
                         SoundManager.Instance.PlayRandomBowPull();
                     }
+
+                    animator.SetBool("isClick", true);
+
                 }
 
                 holdTimer += Time.deltaTime;
@@ -72,8 +79,12 @@ public class ArrowShooter : MonoBehaviour
                 if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
                 {
                     canReleaseToShoot = true;
-                    BowClickImage.SetActive(true);
-                    BowNoClickImage.SetActive(false);
+
+
+                    //Debug.LogError("Checck");
+
+                    //BowClickImage.SetActive(true);
+                    //BowNoClickImage.SetActive(false);
                     Debug.Log("[ArrowShooter] ✅ Hold time completed! Ready to shoot on release!");
                 }
             }
@@ -116,14 +127,11 @@ public class ArrowShooter : MonoBehaviour
 
                     if (isArrowGo == false)
                     {
-                        if (BowClickImage != null)
-                        {
-                            BowClickImage.SetActive(false);
-                        }
-                        if (BowNoClickImage != null)
-                        {
-                            BowNoClickImage.SetActive(true);
-                        }
+                       
+                        animator.SetBool("isClick", false);
+                        BowNoArrowClickImage.SetActive(false);
+                        BowNoClickImage.SetActive(true);
+
                     }
 
                 }
@@ -143,9 +151,13 @@ public class ArrowShooter : MonoBehaviour
         GameObject newArrow = Instantiate(arrowPrefab, spawnPosition, Quaternion.identity);
         isArrowGo = true;
 
-        BowNoArrowClickImage.SetActive(true);
-        BowClickImage.SetActive(false);
+        BowClickImage.sprite = Check;
         BowNoClickImage.SetActive(false);
+        BowNoArrowClickImage.SetActive(true);
+
+        //BowNoArrowClickImage.SetActive(true);
+        ////BowClickImage.SetActive(false);
+        //BowNoClickImage.SetActive(false);
 
 
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
@@ -190,8 +202,8 @@ public class ArrowShooter : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         isArrowGo = false;
+        animator.SetBool("isClick", false);
         BowNoArrowClickImage.SetActive(false);
-        BowClickImage.SetActive(false);
         BowNoClickImage.SetActive(true);
 
         yield return new WaitForSeconds(2f);

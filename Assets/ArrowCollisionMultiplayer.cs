@@ -1,4 +1,5 @@
 ﻿using Fusion;
+using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,7 +27,11 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
 
     public GameObject Particals;
 
-    public int Count = 0;
+    public SkeletonAnimation SkeletonAnimation;
+
+
+
+
     void Start()
     {
         arrowRb = GetComponent<Rigidbody2D>();
@@ -50,6 +55,8 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     public void HandleCollision2D(Collider2D targetCollider)
     {
         Debug.LogError("Arrow hit target - will not be destroyed");
+
+        RPCStartAnimation();
 
         // Play arrow hit target SFX
         if (SoundManager.Instance != null)
@@ -147,20 +154,9 @@ public class ArrowCollisionMultiplayer : NetworkBehaviour
     }
 
 
-    //private void Update()
-    //{
-    //    if (Object.HasInputAuthority)
-    //    {
-    //        RPC_UpdatePosition(this.transform.position);
-    //    }
-
-    //    Debug.Log("Enter");
-    //}
-
-    //[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    //public void RPC_UpdatePosition(Vector3 newPos)
-    //{
-    //    // Server / StateAuthority side update
-    //    transform.position = newPos;
-    //}
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPCStartAnimation()
+    {
+        SkeletonAnimation.state.SetAnimation(0, "animation", false);
+    }
 }

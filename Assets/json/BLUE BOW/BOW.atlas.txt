@@ -1,0 +1,12 @@
+BOW.png
+	size: 329, 153
+	filter: Linear, Linear
+	pma: true
+Asset 17
+	bounds: 2, 35, 5, 317
+	rotate: 90
+BLUE
+	bounds: 2, 42, 109, 325
+	rotate: 90
+BLUE ARROW
+	bounds: 2, 2, 156, 31

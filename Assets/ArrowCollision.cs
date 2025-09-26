@@ -1,3 +1,4 @@
+using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -25,6 +26,8 @@ public class ArrowCollision : MonoBehaviour
 
 
     public GameObject Particals;
+
+    public SkeletonAnimation SkeletonAnimation;
 
     void Start()
     {
@@ -54,6 +57,8 @@ public class ArrowCollision : MonoBehaviour
         {
             SoundManager.Instance.PlayRandomArrowHitTarget();
         }
+
+        SkeletonAnimation.state.SetAnimation(0, "animation", false);
 
         //Particals.SetActive(true);
         //Particals.GetComponent<ParticleSystem>().Play();
