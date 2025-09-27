@@ -64,20 +64,23 @@ public class ArrowShooter : MonoBehaviour
                     Debug.Log("[ArrowShooter] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
 
 
-                    animator.SetBool("isClick", true);
-                    Invoke(nameof(LateCallSound), 0.4f);
+                   
 
 
                 }
 
                 holdTimer += Time.deltaTime;
+                animator.SetBool("isClick", true);
+
+
+                //Invoke(nameof(LateCallSound), 0.2f);
 
                 // Check if held long enough to shoot
                 if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
                 {
                     canReleaseToShoot = true;
 
-
+                    SoundManager.Instance.PlayRandomBowPull();
                     //Debug.LogError("Checck");
 
                     //BowClickImage.SetActive(true);

@@ -137,7 +137,6 @@ public class AIArrowShooter : MonoBehaviour
         // float targetY1 = Target.position.y;
 
         // float yDifference1 = Mathf.Abs(bowY1 - targetY1);
-        Debug.LogError("Y :" + yDifference);
 
         //Debug.LogError("Y Difference: " + yDifference);
 

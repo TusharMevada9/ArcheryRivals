@@ -228,10 +228,11 @@ public class SoundManager : MonoBehaviour
 
 	public void PlayRandomBowPull()
 	{
-		if (bowPullClips == null || bowPullClips.Count == 0)
-		{
-			return;
-		}
+		//if (bowPullClips == null || bowPullClips.Count == 0)
+		//{
+		//	return;
+		//}
+
 		int index = Random.Range(0, bowPullClips.Count);
 		AudioClip clip = bowPullClips[index];
 		if (clip == null)

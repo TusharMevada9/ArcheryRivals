@@ -65,8 +65,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
                         holdTimer = 0f;
                         canReleaseToShoot = false;
                         Debug.Log("[Multiplayer] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
-                        RPCFalse();
-                        Invoke(nameof(LateCallSound), 0.4f);
+                       // Invoke(nameof(LateCallSound), 0.4f);
                         // Play bow pull sound when hold starts (local only)
                         // if (SoundManager.Instance != null)
                         // {
@@ -74,12 +73,14 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
                         // }
                     }
 
+                    RPCFalse();
                     holdTimer += Time.deltaTime;
 
                     if (holdTimer >= holdTimeRequired && !canReleaseToShoot)
                     {
                         canReleaseToShoot = true;
-                        
+                        SoundManager.Instance.PlayRandomBowPull();
+
                         Debug.Log("[Multiplayer] ✅ Hold time completed! Ready to shoot on release!");
                     }
                 }
