@@ -259,7 +259,7 @@ public class AIArrowShooter : MonoBehaviour
             {
 
                 animator.SetBool("isClick", true); // Trigger animation when shooting logic is met
-                Invoke(nameof(LateCallSound), 0.3f);
+                Invoke(nameof(LateCallSound), 0.4f);
                 StartCoroutine(ShootArrow());
             }
         }

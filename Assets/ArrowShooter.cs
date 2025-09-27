@@ -63,13 +63,10 @@ public class ArrowShooter : MonoBehaviour
                     canReleaseToShoot = false;
                     Debug.Log("[ArrowShooter] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
 
-                    // Play bow pull sound when hold starts
-                    if (SoundManager.Instance != null)
-                    {
-                        SoundManager.Instance.PlayRandomBowPull();
-                    }
 
                     animator.SetBool("isClick", true);
+                    Invoke(nameof(LateCallSound), 0.4f);
+
 
                 }
 
@@ -127,7 +124,7 @@ public class ArrowShooter : MonoBehaviour
 
                     if (isArrowGo == false)
                     {
-                       
+
                         animator.SetBool("isClick", false);
                         BowNoArrowClickImage.SetActive(false);
                         BowNoClickImage.SetActive(true);
@@ -138,6 +135,11 @@ public class ArrowShooter : MonoBehaviour
             }
             spawnPosition = this.gameObject.transform.position;
         }
+    }
+
+    public void LateCallSound()
+    {
+        SoundManager.Instance.PlayRandomBowPull();
     }
 
     public IEnumerator ShootArrow()

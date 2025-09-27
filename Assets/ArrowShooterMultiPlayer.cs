@@ -66,11 +66,12 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
                         canReleaseToShoot = false;
                         Debug.Log("[Multiplayer] Started holding input (Space/Mouse) - Hold for 0.5 seconds to shoot!");
                         RPCFalse();
+                        Invoke(nameof(LateCallSound), 0.4f);
                         // Play bow pull sound when hold starts (local only)
-                        if (SoundManager.Instance != null)
-                        {
-                            SoundManager.Instance.PlayRandomBowPull();
-                        }
+                        // if (SoundManager.Instance != null)
+                        // {
+                        //     SoundManager.Instance.PlayRandomBowPull();
+                        // }
                     }
 
                     holdTimer += Time.deltaTime;
@@ -138,7 +139,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
         NetworkObject newArrow = FusionConnector.instance.NetworkRunner.Spawn(arrowPrefab, spawnPosition, Quaternion.identity);
         isArrowGo = true;
         RPCNoArrowTrue();
-        
+
         Rigidbody2D arrowRb = newArrow.GetComponent<Rigidbody2D>();
         if (arrowRb != null)
         {
@@ -182,7 +183,7 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
 
         isArrowGo = false;
         RPCNoArrowfalse();
-        
+
 
         yield return new WaitForSeconds(2f);
 
@@ -196,6 +197,12 @@ public class ArrowShooterMultiPlayer : NetworkBehaviour
     }
 
     // Shooting cooldown coroutine
+    
+    public void LateCallSound()
+    {
+        SoundManager.Instance.PlayRandomBowPull();
+    }
+
     private IEnumerator ShootingCooldown()
     {
         canShoot = false; // Disable shooting
