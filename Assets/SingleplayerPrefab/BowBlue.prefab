@@ -129,6 +129,8 @@ MonoBehaviour:
   spawnGateDelay: 0.1
   minGapBetweenShotsHard: 0.5
   aiHoldDuration: 2
+  minRandomDelay: 1
+  maxRandomDelay: 2
   isGameStart: 0
   BowClickImage: {fileID: 1773237933125008137}
   Check: {fileID: 21300000, guid: 6690b62864c6e154091dd60a1b02fb7d, type: 3}

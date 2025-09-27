@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class AIArrowShooter : MonoBehaviour
@@ -27,37 +28,41 @@ public class AIArrowShooter : MonoBehaviour
     public AIMode currentAIDifficulty = AIMode.Easy;
 
     [Header("AI Accuracy Settings")]
-    [SerializeField, Range(0f, 1f)] private float easyHitAccuracy = 0.85f; // Increased probability to align for a hit
-    [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.99f; // Higher probability on hard
-    [SerializeField] private float easyYAlignTolerance = 0.6f; // Tighter Y diff window to shoot
-    [SerializeField] private float hardYAlignTolerance = 0.15f; // Much tighter tolerance for better accuracy
-    [SerializeField] private float hardShootForceBonus = 1.2f; // Faster arrows on hard for better precision
+    [SerializeField, Range(0f, 1f)] private float easyHitAccuracy = 0.4f; // Lower accuracy for Easy mode
+    [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.98f; // Near-perfect accuracy for Hard mode
+    [SerializeField] private float easyYAlignTolerance = 1.5f; // Wider tolerance for Easy mode (less accurate)
+    [SerializeField] private float hardYAlignTolerance = 1.5f; // Much more forgiving tolerance for Hard mode - allows many more shots
+    [SerializeField] private float hardShootForceBonus = 1.2f; // Much faster arrows on hard for better precision
     [SerializeField] private bool requireBelowTarget = true; // Only shoot if bow is at/below target height
-    [SerializeField] private float belowApproachOffsetEasy = 0.05f; // More precise spawn positioning
-    [SerializeField] private float belowApproachOffsetHard = 0.01f; // Very precise positioning
-    [SerializeField] private float belowEpsilonEasy = 0.08f; // Tighter tolerance above target
-    [SerializeField] private float belowEpsilonHard = 0.005f; // Extremely tight tolerance for hard mode
-    
+    [SerializeField] private float belowApproachOffsetEasy = 0.15f; // Less precise for Easy mode
+    [SerializeField] private float belowApproachOffsetHard = 0.08f; // More forgiving for Hard mode
+    [SerializeField] private float belowEpsilonEasy = 0.3f; // Wider tolerance for Easy mode
+    [SerializeField] private float belowEpsilonHard = 0.8f; // Much more forgiving tolerance for Hard mode
+
     [Header("Advanced Accuracy Features")]
     [SerializeField] private bool usePredictiveAiming = true; // Predict target movement
-    [SerializeField] private float predictionTime = 0.15f; // Increased prediction time for better accuracy
+    [SerializeField] private float predictionTime = 0.2f; // Longer prediction time for better accuracy
     [SerializeField] private bool useMicroAdjustments = true; // Fine-tune aim based on target velocity
-    [SerializeField] private float microAdjustmentStrength = 0.8f; // Increased adjustment strength
+    [SerializeField] private float microAdjustmentStrength = 1.2f; // Much stronger adjustment for Hard mode
     [SerializeField] private bool useAccuracyCurve = true; // Use accuracy curve based on distance
     [SerializeField] private AnimationCurve accuracyCurve = AnimationCurve.Linear(0f, 1f, 10f, 0.8f); // Improved accuracy curve
 
     [Header("AI Timing")]
     [SerializeField] private float nearCheckInterval = 0.2f;
     [SerializeField] private float nearWindowMultiplier = 2f;
-    [SerializeField] private float hardLooseWindow = 0.5f; // Tighter loose window for hard mode
+    [SerializeField] private float hardLooseWindow = 1.2f; // Much more forgiving loose window for hard mode
     [SerializeField] private float hardQuickRetry = 0.05f; // Faster retry for hard mode
     [SerializeField] private bool fireImmediatelyOnAlign = true;
-    [SerializeField] private float hardImmediateCooldown = 0.5f;
-    [SerializeField] private float easyImmediateCooldown = 0.5f;
-    [SerializeField] private float spawnGateDelay = 0.1f;
-    [SerializeField] private float minGapBetweenShotsHard = 0.5f;
+    [SerializeField] private float hardImmediateCooldown = 0f; // No delay
+    [SerializeField] private float easyImmediateCooldown = 0f; // No delay
+    [SerializeField] private float spawnGateDelay = 0f; // No delay
+    [SerializeField] private float minGapBetweenShotsHard = 0f; // No delay
     [Header("AI Hold Settings")]
-    [SerializeField] private float aiHoldDuration = 2.0f;
+    [SerializeField] private float aiHoldDuration = 0.5f; // No hold delay
+
+    [Header("Random Delay Settings")]
+    [SerializeField] private float minRandomDelay = 1f; // Minimum random delay
+    [SerializeField] private float maxRandomDelay = 2f; // Maximum random delay
 
     private Vector3 spawnPosition;
     private float currentDistance = 0f;
@@ -68,7 +73,8 @@ public class AIArrowShooter : MonoBehaviour
     private float lastTargetY = float.NaN;
     private bool isFiring = false;
     private float lastShotTime = -999f;
-    
+    private float nextRandomShotTime = 0f; // Time when next shot can be fired
+
     // Predictive aiming variables
     private Vector3 targetVelocity = Vector3.zero;
     private Vector3 lastTargetPosition = Vector3.zero;
@@ -99,12 +105,12 @@ public class AIArrowShooter : MonoBehaviour
         if (IFrameBridge.Instance.botLevel == AIMode.Easy)
         {
             currentAIDifficulty = AIMode.Easy;
-            shootInterval = 2f;
+            shootInterval = 3f; // Slower shooting for Easy mode (less scoring)
         }
         else
         {
             currentAIDifficulty = AIMode.Hard;
-            shootInterval = 1.2f;
+            shootInterval = 0.5f; // Very fast shooting for Hard mode to achieve 45-50 score range
         }
 
         // Assign blue target when AI spawns
@@ -116,9 +122,25 @@ public class AIArrowShooter : MonoBehaviour
 
         StartAiShooting();
     }
-
+    float yDifference;
+    float bowY;
+    float targetY;
+    
     void Update()
     {
+        bowY = Bow.position.y;
+        targetY = Target.position.y;
+
+         yDifference = Mathf.Abs(bowY - targetY);
+
+        // float bowY1 = Bow.position.y;
+        // float targetY1 = Target.position.y;
+
+        // float yDifference1 = Mathf.Abs(bowY1 - targetY1);
+        Debug.LogError("Y :" + yDifference);
+
+        //Debug.LogError("Y Difference: " + yDifference);
+
         if (UIManager.Instance.isGameStart == true)
         {
             spawnPosition = this.gameObject.transform.position;
@@ -129,34 +151,48 @@ public class AIArrowShooter : MonoBehaviour
             {
                 // Update target velocity for predictive aiming
                 UpdateTargetVelocity();
-                
+
                 float yDiff = Bow.position.y - Target.position.y;
                 currentDistance = Mathf.Abs(yDiff);
 
                 // Apply accuracy curve based on distance
                 float accuracyMultiplier = useAccuracyCurve ? accuracyCurve.Evaluate(currentDistance) : 1f;
-                
+
                 // Difficulty-based alignment window with accuracy multiplier
                 float alignTolerance = GetAlignTolerance() * accuracyMultiplier;
                 bool isAligned = currentDistance <= alignTolerance;
                 bool hardCanForce = currentAIDifficulty == AIMode.Hard && currentDistance <= hardLooseWindow;
 
-                // Detect approaching motion: bow and target moving towards each other along Y
+                // Detect converging motion: bow and target moving towards each other along Y
                 float bowDelta = float.IsNaN(lastBowY) ? 0f : Bow.position.y - lastBowY;
                 float targetDelta = float.IsNaN(lastTargetY) ? 0f : Target.position.y - lastTargetY;
-                bool approaching = (bowDelta < 0f && targetDelta > 0f) || (bowDelta > 0f && targetDelta < 0f);
+
+                // Bow coming down (negative delta) and target going up (positive delta) = converging
+                bool bowDownTargetUp = (bowDelta < 0f && targetDelta > 0f);
+                // Bow going up (positive delta) and target coming down (negative delta) = converging  
+                bool bowUpTargetDown = (bowDelta > 0f && targetDelta < 0f);
+                bool converging = bowDownTargetUp || bowUpTargetDown;
+
+                // Shoot when converging and within range (Hard mode difference = 3)
+                float convergingRange = currentAIDifficulty == AIMode.Hard ? 1f : 2f; // Hard mode difference increased to 3
+                bool convergingWithinRange = converging && currentDistance <= convergingRange;
+
+                // Shoot when Y positions are close (more forgiving for Hard mode)
+                float exactMatchThreshold = currentAIDifficulty == AIMode.Hard ? 0.3f : 0.1f;
+                bool exactMatch = Mathf.Abs(currentDistance) <= exactMatchThreshold;
+
                 // Also allow shot when integer Y band matches (first digit same)
                 bool sameYBand = Mathf.FloorToInt(Bow.position.y) == Mathf.FloorToInt(Target.position.y);
-                
+
                 // Enhanced alignment check with predictive aiming
                 bool predictiveAligned = false;
                 if (usePredictiveAiming && currentAIDifficulty == AIMode.Hard)
                 {
                     Vector3 predictedTargetPos = Target.position + (targetVelocity * predictionTime);
                     float predictedYDiff = Bow.position.y - predictedTargetPos.y;
-                    predictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 0.6f; // Even tighter for prediction
+                    predictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 1.2f; // More forgiving for Hard mode
                 }
-                
+
                 // Also enable predictive aiming for Easy mode with reduced effectiveness
                 bool easyPredictiveAligned = false;
                 if (usePredictiveAiming && currentAIDifficulty == AIMode.Easy)
@@ -166,10 +202,37 @@ public class AIArrowShooter : MonoBehaviour
                     easyPredictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 0.9f;
                 }
 
-                if (currentAIDifficulty == AIMode.Hard)
+                // Check Y distance first - don't shoot if too far
+                if (yDifference >= 3f)
                 {
-                    // For Hard: fire when approaching and within ~1 unit OR when in same integer Y band OR predictive alignment
-                    canShoot = (approaching && currentDistance <= 1f) || sameYBand || predictiveAligned;
+                    canShoot = false;
+                    Debug.Log($"AI not shooting - Y distance too large: {yDifference:F2}");
+                }
+                // New shooting logic based on converging motion
+                else if (exactMatch)
+                {
+                    // Always shoot when Y positions are exactly the same
+                    canShoot = true;
+                    Debug.Log("Exact Y position match - shooting!");
+                }
+                else if (convergingWithinRange)
+                {
+                    // Shoot when converging and within 2 units
+                    canShoot = true;
+                    Debug.Log($"Converging motion detected - shooting! Distance: {currentDistance:F2}");
+                }
+                else if (currentAIDifficulty == AIMode.Hard)
+                {
+                    // For Hard: Very aggressive approach - shoot almost always to maximize hits
+                    // Use very forgiving conditions to ensure high hit rate
+                    canShoot = (currentDistance <= hardYAlignTolerance) || 
+                               (Mathf.Abs(yDifference) <= 1.0f) || 
+                               sameYBand || 
+                               predictiveAligned || 
+                               isAligned ||
+                               hardCanForce ||
+                               convergingWithinRange;
+                    Debug.Log($"Hard mode - Y distance: {yDifference:F2}, Current distance: {currentDistance:F2}, Can shoot: {canShoot}");
                 }
                 else if (requireBelowTarget)
                 {
@@ -192,15 +255,21 @@ public class AIArrowShooter : MonoBehaviour
                 canShoot = false;
             }
 
-            // Immediate fire to avoid missing brief overlaps
-            if (aiAutoShoot && fireImmediatelyOnAlign && canShoot && Time.time >= nextImmediateTime && !isOnCooldown && !isFiring)
+            // Fire with random delay between shots
+            if (aiAutoShoot && fireImmediatelyOnAlign && canShoot && !isFiring && Time.time >= nextRandomShotTime)
             {
-                // Only rate-limit immediate shots when already cooling down
-                if (isOnCooldown)
-                    nextImmediateTime = Time.time + (currentAIDifficulty == AIMode.Hard ? hardImmediateCooldown : easyImmediateCooldown);
+
+                animator.SetBool("isClick", true); // Trigger animation when shooting logic is met
+                Invoke(nameof(LateCallSound), 0.3f);
                 StartCoroutine(ShootArrow());
             }
         }
+    }
+
+    public void LateCallSound()
+    {
+        SoundManager.Instance.PlayRandomBowPull();
+
     }
 
     void StartAiShooting()
@@ -212,9 +281,14 @@ public class AIArrowShooter : MonoBehaviour
     {
         if (!aiAutoShoot) return;
 
-        if (canShoot && !isOnCooldown)
+        if (canShoot && Time.time >= nextRandomShotTime)
         {
             Debug.Log($"{currentAIDifficulty} AI - Distance {currentDistance:F2} <= {maxShootDistance}. Shooting now!");
+            animator.SetBool("isClick", true); // Trigger animation when shooting logic is met
+            // if (SoundManager.Instance != null)
+            // {
+            //     SoundManager.Instance.PlayRandomBowPull();
+            // }
             StartCoroutine(ShootArrow());
             Invoke(nameof(AIShootCycle), shootInterval);
             return;
@@ -226,7 +300,7 @@ public class AIArrowShooter : MonoBehaviour
             float alignTolerance = GetAlignTolerance();
             float quick = currentAIDifficulty == AIMode.Hard ? hardQuickRetry : nearCheckInterval;
             float nextDelay = currentDistance <= alignTolerance * nearWindowMultiplier ? quick : shootInterval;
-            Invoke(nameof(AIShootCycle), nextDelay);
+            //Invoke(nameof(AIShootCycle), nextDelay);
             return;
         }
     }
@@ -237,16 +311,22 @@ public class AIArrowShooter : MonoBehaviour
     }
     public IEnumerator ShootArrow()
     {
+
+        if (UIManager.Instance.isGameStart == false)
+        {
+            StopCoroutine(ShootArrow());
+            yield break;
+        }
+
         if (isFiring)
             yield break;
-        if (currentAIDifficulty == AIMode.Hard && Time.time < lastShotTime + minGapBetweenShotsHard)
-            yield break;
+        // Removed cooldown check for immediate shooting
         isFiring = true;
 
         // BowClickImage.SetActive(true);
         // BowNoClickImage.SetActive(false);
 
-        animator.SetBool("isClick", true);
+        // Animation is now triggered at the shooting logic location
 
         if (arrowPrefab == null)
         {
@@ -254,18 +334,21 @@ public class AIArrowShooter : MonoBehaviour
             yield break;
         }
 
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.PlayRandomBowPull();
-        }
+        // Play stretch sound immediately when stretch animation starts
+
+
+        // Wait for stretch animation to complete
         yield return new WaitForSeconds(aiHoldDuration);
 
         Vector3 adjustedSpawn = shootPoint != null ? shootPoint.position : spawnPosition;
         Vector3 microAdjustment = CalculateMicroAdjustment();
         adjustedSpawn += microAdjustment;
 
+        GameObject newArrow = null;
 
-        GameObject newArrow = Instantiate(arrowPrefab, adjustedSpawn, Quaternion.identity);
+        // Create arrow (condition already checked at start of method)
+        newArrow = Instantiate(arrowPrefab, adjustedSpawn, Quaternion.identity);
+        Debug.Log($"AI shooting - Target above bow: TargetY={targetY}, BowY={bowY}, Difference={yDifference}");
 
         //animator.SetBool("isGo", true);
 
@@ -309,20 +392,50 @@ public class AIArrowShooter : MonoBehaviour
             }
 
             Debug.Log("AI Arrow spawned at: " + spawnPosition + " with force: " + shootForce);
+
+            // Disable AI target speed control for maximum hit rate
+            if (Target != null)
+            {
+                AITargetSpeedController aiTargetController = Target.GetComponent<AITargetSpeedController>();
+                if (aiTargetController != null)
+                {
+                    // Completely disable target speed increases to maximize hit rate
+                    // Only occasionally move target to arrow spawn position
+                    if (Random.Range(0f, 1f) < 0.2f) // 20% chance to move target
+                    {
+                        aiTargetController.MoveToArrowSpawnPosition(adjustedSpawn);
+                        Debug.Log($"AI triggered target to move to arrow spawn position: {adjustedSpawn}");
+                    }
+                }
+            }
         }
         else
         {
             Debug.LogWarning("AI Arrow prefab doesn't have Rigidbody2D component!");
         }
 
-        yield return new WaitForSeconds(1f);
-
+        // Removed all delays for immediate shooting
         animator.SetBool("isClick", false);
         BowNoArrowClickImage.SetActive(false);
         BowNoClickImage.SetActive(true);
 
-        yield return new WaitForSeconds(spawnGateDelay);
         isFiring = false;
+
+        // Set next random shot time (different delays for Easy vs Hard)
+        float randomDelay;
+        if (currentAIDifficulty == AIMode.Easy)
+        {
+            // Easy mode: longer delays (2-4 seconds) = less scoring
+            randomDelay = Random.Range(2f, 3f);
+        }
+        else
+        {
+            // Hard mode: very short delay to maximize shooting frequency
+            // This will help achieve the 45-50 score range by shooting very frequently
+            randomDelay = Random.Range(0.3f, 0.6f);
+        }
+        nextRandomShotTime = Time.time + randomDelay;
+        Debug.Log($"{currentAIDifficulty} mode - Next shot in {randomDelay:F2} seconds");
 
         yield return new WaitForSeconds(arrowLifetime);
 
@@ -335,18 +448,13 @@ public class AIArrowShooter : MonoBehaviour
 
     public void NotifyAIArrowHit()
     {
-        if (!isOnCooldown)
-        {
-            StartCoroutine(CooldownAfterHit());
-        }
+        // Removed cooldown logic for immediate shooting
     }
 
     private IEnumerator CooldownAfterHit()
     {
-        isOnCooldown = true;
-        float cd = currentAIDifficulty == AIMode.Hard ? hardImmediateCooldown : easyImmediateCooldown;
-        yield return new WaitForSeconds(cd);
-        isOnCooldown = false;
+        // Removed cooldown logic for immediate shooting
+        yield break;
     }
 
     public void AssignBlueTarget()
@@ -360,7 +468,7 @@ public class AIArrowShooter : MonoBehaviour
 
         if (blueTarget == null)
         {
-            GameObject[] allObjects = FindObjectsOfType<GameObject>();
+            GameObject[] allObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             foreach (GameObject obj in allObjects)
             {
                 if (obj.name.Contains("Blue") && obj.name.Contains("Target"))
@@ -424,7 +532,7 @@ public class AIArrowShooter : MonoBehaviour
         Particals.GetComponent<ParticleSystem>().Stop();
         Particals.SetActive(false);
     }
-    
+
     private void UpdateTargetVelocity()
     {
         if (Time.time - targetVelocityUpdateTime > 0.1f) // Update every 0.1 seconds
@@ -437,12 +545,12 @@ public class AIArrowShooter : MonoBehaviour
             targetVelocityUpdateTime = Time.time;
         }
     }
-    
+
     private Vector3 CalculateMicroAdjustment()
     {
         if (!useMicroAdjustments)
             return Vector3.zero;
-            
+
         Vector3 adjustment = Vector3.zero;
         if (targetVelocity.magnitude > 0.05f) // Lower threshold for more responsive adjustments
         {

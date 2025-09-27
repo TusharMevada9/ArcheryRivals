@@ -109,7 +109,7 @@ MonoBehaviour:
   moveUpDown: 1
   useRandomSpeed: 1
   minSpeed: 1
-  maxSpeed: 2
+  maxSpeed: 1.5
   speedChangeInterval: 5
 --- !u!114 &7412634568363355740
 MonoBehaviour:
