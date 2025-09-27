@@ -31,17 +31,17 @@ public class AIArrowShooter : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float easyHitAccuracy = 0.4f; // Lower accuracy for Easy mode
     [SerializeField, Range(0f, 1f)] private float hardHitAccuracy = 0.98f; // Near-perfect accuracy for Hard mode
     [SerializeField] private float easyYAlignTolerance = 1.5f; // Wider tolerance for Easy mode (less accurate)
-    [SerializeField] private float hardYAlignTolerance = 1.5f; // Much more forgiving tolerance for Hard mode - allows many more shots
+    [SerializeField] private float hardYAlignTolerance = 0.1f; // Perfect accuracy tolerance for Hard mode - only shoot when exactly aligned
     [SerializeField] private float hardShootForceBonus = 1.2f; // Much faster arrows on hard for better precision
     [SerializeField] private bool requireBelowTarget = true; // Only shoot if bow is at/below target height
     [SerializeField] private float belowApproachOffsetEasy = 0.15f; // Less precise for Easy mode
     [SerializeField] private float belowApproachOffsetHard = 0.08f; // More forgiving for Hard mode
     [SerializeField] private float belowEpsilonEasy = 0.3f; // Wider tolerance for Easy mode
-    [SerializeField] private float belowEpsilonHard = 0.8f; // Much more forgiving tolerance for Hard mode
+    [SerializeField] private float belowEpsilonHard = 0.05f; // Perfect accuracy tolerance for Hard mode
 
     [Header("Advanced Accuracy Features")]
     [SerializeField] private bool usePredictiveAiming = true; // Predict target movement
-    [SerializeField] private float predictionTime = 0.2f; // Longer prediction time for better accuracy
+    [SerializeField] private float predictionTime = 0.3f; // Extended prediction time for perfect accuracy
     [SerializeField] private bool useMicroAdjustments = true; // Fine-tune aim based on target velocity
     [SerializeField] private float microAdjustmentStrength = 1.2f; // Much stronger adjustment for Hard mode
     [SerializeField] private bool useAccuracyCurve = true; // Use accuracy curve based on distance
@@ -50,7 +50,7 @@ public class AIArrowShooter : MonoBehaviour
     [Header("AI Timing")]
     [SerializeField] private float nearCheckInterval = 0.2f;
     [SerializeField] private float nearWindowMultiplier = 2f;
-    [SerializeField] private float hardLooseWindow = 1.2f; // Much more forgiving loose window for hard mode
+    [SerializeField] private float hardLooseWindow = 0.1f; // Perfect accuracy loose window for hard mode
     [SerializeField] private float hardQuickRetry = 0.05f; // Faster retry for hard mode
     [SerializeField] private bool fireImmediatelyOnAlign = true;
     [SerializeField] private float hardImmediateCooldown = 0f; // No delay
@@ -110,7 +110,7 @@ public class AIArrowShooter : MonoBehaviour
         else
         {
             currentAIDifficulty = AIMode.Hard;
-            shootInterval = 0.5f; // Very fast shooting for Hard mode to achieve 45-50 score range
+            shootInterval = 0.8f; // Fast shooting for Hard mode with perfect accuracy
         }
 
         // Assign blue target when AI spawns
@@ -177,8 +177,8 @@ public class AIArrowShooter : MonoBehaviour
                 float convergingRange = currentAIDifficulty == AIMode.Hard ? 1f : 2f; // Hard mode difference increased to 3
                 bool convergingWithinRange = converging && currentDistance <= convergingRange;
 
-                // Shoot when Y positions are close (more forgiving for Hard mode)
-                float exactMatchThreshold = currentAIDifficulty == AIMode.Hard ? 0.3f : 0.1f;
+                // Shoot when Y positions are close (perfect accuracy for Hard mode)
+                float exactMatchThreshold = currentAIDifficulty == AIMode.Hard ? 0.05f : 0.1f;
                 bool exactMatch = Mathf.Abs(currentDistance) <= exactMatchThreshold;
 
                 // Also allow shot when integer Y band matches (first digit same)
@@ -190,7 +190,7 @@ public class AIArrowShooter : MonoBehaviour
                 {
                     Vector3 predictedTargetPos = Target.position + (targetVelocity * predictionTime);
                     float predictedYDiff = Bow.position.y - predictedTargetPos.y;
-                    predictiveAligned = Mathf.Abs(predictedYDiff) <= alignTolerance * 1.2f; // More forgiving for Hard mode
+                    predictiveAligned = Mathf.Abs(predictedYDiff) <= 0.08f; // Perfect accuracy for Hard mode
                 }
 
                 // Also enable predictive aiming for Easy mode with reduced effectiveness
@@ -223,16 +223,15 @@ public class AIArrowShooter : MonoBehaviour
                 }
                 else if (currentAIDifficulty == AIMode.Hard)
                 {
-                    // For Hard: Very aggressive approach - shoot almost always to maximize hits
-                    // Use very forgiving conditions to ensure high hit rate
-                    canShoot = (currentDistance <= hardYAlignTolerance) || 
-                               (Mathf.Abs(yDifference) <= 1.0f) || 
-                               sameYBand || 
-                               predictiveAligned || 
-                               isAligned ||
-                               hardCanForce ||
-                               convergingWithinRange;
-                    Debug.Log($"Hard mode - Y distance: {yDifference:F2}, Current distance: {currentDistance:F2}, Can shoot: {canShoot}");
+                    // For Hard: Perfect accuracy approach - only shoot when guaranteed to hit
+                    // Use extremely tight tolerances for 100% hit rate
+                    bool perfectAlignment = currentDistance <= hardYAlignTolerance;
+                    bool perfectMatch = Mathf.Abs(yDifference) <= 0.05f;
+                    bool perfectPrediction = predictiveAligned && currentDistance <= 0.08f;
+                    bool perfectForce = hardCanForce && currentDistance <= 0.05f;
+                    
+                    canShoot = perfectAlignment || perfectMatch || perfectPrediction || perfectForce;
+                    Debug.Log($"Hard mode - Y distance: {yDifference:F2}, Current distance: {currentDistance:F2}, Perfect alignment: {perfectAlignment}, Perfect match: {perfectMatch}, Can shoot: {canShoot}");
                 }
                 else if (requireBelowTarget)
                 {
